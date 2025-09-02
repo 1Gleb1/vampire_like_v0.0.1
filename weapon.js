@@ -7,7 +7,7 @@ export class Weapon {
 		this.size = size;
 		this.color = color;
 		this.damage = 20;
-		this.customAngles = [0]; // для дополнительных направлений
+		this.customAngles = [0];
 	}
 
 	fire(x, y, projectiles, targetX, targetY) {
@@ -72,6 +72,6 @@ export class Weapon {
 	addExtraBullet() {
 		this.type = 'multi';
 		this.customAngles = this.customAngles || [0];
-		this.customAngles.push(0.1); // немного смещённая пуля
+		this.customAngles.push(0.1);
 	}
 }

@@ -1,4 +1,4 @@
-import { MAP_HEIGHT, MAP_WIDTH } from './main.js'
+import { MAP_HEIGHT, MAP_WIDTH } from './main.js';
 import { Weapon } from './weapon.js';
 
 export class Player {
@@ -18,10 +18,10 @@ export class Player {
 	}
 
 	move(keys) {
-		if (keys['w'] || keys['ArrowUp']) this.y -= this.speed;
-		if (keys['s'] || keys['ArrowDown']) this.y += this.speed;
-		if (keys['a'] || keys['ArrowLeft']) this.x -= this.speed;
-		if (keys['d'] || keys['ArrowRight']) this.x += this.speed;
+		if (keys['ц'] || keys['w'] || keys['ArrowUp']) this.y -= this.speed;
+		if (keys['ы'] || keys['s'] || keys['ArrowDown']) this.y += this.speed;
+		if (keys['ф'] || keys['a'] || keys['ArrowLeft']) this.x -= this.speed;
+		if (keys['в'] || keys['d'] || keys['ArrowRight']) this.x += this.speed;
 
 		// Ограничения по границам карты
 		if (this.x < this.size) this.x = this.size;

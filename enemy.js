@@ -40,7 +40,7 @@ export class Enemy {
 	}
 }
 
-// Функция спавна врагов
+
 export function spawnEnemy(type = 'normal', enemies) {
 	const mapSize = 4000;
 	const side = Math.random() < 0.5 ? 0 : 1;

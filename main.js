@@ -13,13 +13,11 @@ export const MAP_HEIGHT = 4000;
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-// функция для ресайза
 function resizeCanvas() {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 }
 
-// первый запуск и подписка на ресайз окна
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
@@ -33,7 +31,7 @@ const projectiles = [];
 const particles = [];
 const keys = {};
 
-let isPaused = false; // пауза для выбора апгрейда
+let isPaused = false;
 let upgradeCards = [];
 
 canvas.addEventListener('mousemove', e => {
@@ -46,7 +44,6 @@ document.addEventListener('keydown', e => {
 });
 document.addEventListener('keyup', e => (keys[e.key] = false));
 
-// Показ апгрейдов
 function showUpgradeCards() {
 	isPaused = true;
 	upgradeCards = [];
@@ -70,7 +67,6 @@ function showGameOver() {
 	);
 }
 
-// Выбор апгрейда
 canvas.addEventListener('click', e => {
 	if (!isPaused) return;
 	const rect = canvas.getBoundingClientRect();
@@ -83,20 +79,18 @@ canvas.addEventListener('click', e => {
 		const w = 150,
 			h = 120;
 		if (mx >= x && mx <= x + w && my >= y && my <= y + h) {
-			card.effect(player); // применяем апгрейд
+			card.effect(player);
 			isPaused = false;
 		}
 	});
 });
 
-// Рисуем карточки
 function drawUpgradeCards() {
 	ctx.fillStyle = 'rgba(0,0,0,0.8)';
 	const camX = canvas.width / 2;
 	const camY = canvas.height / 2;
 
 	ctx.fillRect(-camX, -camY, MAP_WIDTH, MAP_HEIGHT);
-	// ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 	upgradeCards.forEach((card, index) => {
 		const x = 150 + index * 180;
@@ -112,9 +106,6 @@ function drawUpgradeCards() {
 	});
 }
 
-// --------------------
-// Игровой цикл
-// --------------------
 function update() {
 	if (isPaused) return;
 
@@ -163,11 +154,10 @@ function update() {
 					for (let k = 0; k < 10; k++)
 						particles.push(new Particle(e.x, e.y, e.color));
 
-					// Если игрок достигает уровня
 					if (player.xp >= player.level * 50) {
 						player.level++;
 						player.xp = 0;
-						showUpgradeCards(); // пауза и выбор апгрейда
+						showUpgradeCards();
 					}
 				}
 				break;

@@ -13,7 +13,7 @@ export class Projectile {
 	update() {
 		this.x += Math.cos(this.angle) * this.speed;
 		this.y += Math.sin(this.angle) * this.speed;
-		this.life--; // уменьшаем срок жизни
+		this.life--;
 	}
 
 	isDead() {
