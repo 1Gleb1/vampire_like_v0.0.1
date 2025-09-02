@@ -1,0 +1,261 @@
+import { Camera } from './camera.js';
+import { spawnEnemy } from './enemy.js';
+import { Particle } from './particle.js';
+import { Player } from './player.js';
+import { allUpgrades } from './upgrades.js';
+
+let mouseX = 0;
+let mouseY = 0;
+
+export const MAP_WIDTH = 4000;
+export const MAP_HEIGHT = 4000;
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// функция для ресайза
+function resizeCanvas() {
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+}
+
+// первый запуск и подписка на ресайз окна
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const ui = document.getElementById('ui');
+
+const player = new Player();
+const camera = new Camera(player, canvas);
+
+const enemies = [];
+const projectiles = [];
+const particles = [];
+const keys = {};
+
+let isPaused = false; // пауза для выбора апгрейда
+let upgradeCards = [];
+
+canvas.addEventListener('mousemove', e => {
+	const rect = canvas.getBoundingClientRect();
+	mouseX = e.clientX - rect.left;
+	mouseY = e.clientY - rect.top;
+});
+document.addEventListener('keydown', e => {
+	if (!isPaused) keys[e.key] = true;
+});
+document.addEventListener('keyup', e => (keys[e.key] = false));
+
+// Показ апгрейдов
+function showUpgradeCards() {
+	isPaused = true;
+	upgradeCards = [];
+	const shuffled = allUpgrades.sort(() => 0.5 - Math.random());
+	upgradeCards = shuffled.slice(0, 3);
+	drawUpgradeCards();
+}
+
+function showGameOver() {
+	ctx.fillStyle = 'rgba(0,0,0,0.8)';
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	ctx.fillStyle = 'red';
+	ctx.font = '48px sans-serif';
+	ctx.textAlign = 'center';
+	ctx.fillText('ПОРАЖЕНИЕ', canvas.width / 2, canvas.height / 2 - 20);
+	ctx.font = '24px sans-serif';
+	ctx.fillText(
+		'Обновите страницу, чтобы начать заново',
+		canvas.width / 2,
+		canvas.height / 2 + 20
+	);
+}
+
+// Выбор апгрейда
+canvas.addEventListener('click', e => {
+	if (!isPaused) return;
+	const rect = canvas.getBoundingClientRect();
+	const mx = e.clientX - rect.left;
+	const my = e.clientY - rect.top;
+
+	upgradeCards.forEach((card, index) => {
+		const x = 150 + index * 180;
+		const y = canvas.height / 2 - 60;
+		const w = 150,
+			h = 120;
+		if (mx >= x && mx <= x + w && my >= y && my <= y + h) {
+			card.effect(player); // применяем апгрейд
+			isPaused = false;
+		}
+	});
+});
+
+// Рисуем карточки
+function drawUpgradeCards() {
+	ctx.fillStyle = 'rgba(0,0,0,0.8)';
+	const camX = canvas.width / 2;
+	const camY = canvas.height / 2;
+
+	ctx.fillRect(-camX, -camY, MAP_WIDTH, MAP_HEIGHT);
+	// ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+	upgradeCards.forEach((card, index) => {
+		const x = 150 + index * 180;
+		const y = canvas.height / 2 - 60;
+		const w = 150,
+			h = 120;
+
+		ctx.fillStyle = 'white';
+		ctx.fillRect(x, y, w, h);
+		ctx.fillStyle = 'black';
+		ctx.font = '16px sans-serif';
+		ctx.fillText(card.name, x + 10, y + 60);
+	});
+}
+
+// --------------------
+// Игровой цикл
+// --------------------
+function update() {
+	if (isPaused) return;
+
+	if (player.hp <= 0) {
+		isPaused = true;
+		showGameOver();
+		return;
+	}
+
+	player.move(keys);
+	player.shoot(projectiles, mouseX, mouseY, camera);
+	camera.update();
+
+	enemies.forEach(e => {
+		e.move(player);
+		e.shoot(player, projectiles);
+		if (Math.hypot(player.x - e.x, player.y - e.y) < player.size + e.size) {
+			player.hp -= e.type === 'fast' ? 1 : 2;
+		}
+	});
+
+	for (let i = projectiles.length - 1; i >= 0; i--) {
+		const p = projectiles[i];
+		p.update();
+		if (
+			p.x < 0 ||
+			p.x > MAP_WIDTH ||
+			p.y < 0 ||
+			p.y > MAP_HEIGHT ||
+			p.isDead()
+		) {
+			projectiles.splice(i, 1);
+		}
+
+		for (let j = enemies.length - 1; j >= 0; j--) {
+			const e = enemies[j];
+			if (
+				p.color === 'yellow' &&
+				Math.hypot(p.x - e.x, p.y - e.y) < p.size + e.size
+			) {
+				e.hp -= 20;
+				projectiles.splice(i, 1);
+				if (e.hp <= 0) {
+					enemies.splice(j, 1);
+					player.xp += 10;
+					for (let k = 0; k < 10; k++)
+						particles.push(new Particle(e.x, e.y, e.color));
+
+					// Если игрок достигает уровня
+					if (player.xp >= player.level * 50) {
+						player.level++;
+						player.xp = 0;
+						showUpgradeCards(); // пауза и выбор апгрейда
+					}
+				}
+				break;
+			}
+		}
+		if (p.isDead() || p.x < 0 || p.x > 4000 || p.y < 0 || p.y > 4000) {
+			projectiles.splice(i, 1);
+		}
+
+		if (
+			p.color === 'pink' &&
+			Math.hypot(p.x - player.x, p.y - player.y) < p.size + player.size
+		) {
+			player.hp -= 5;
+			projectiles.splice(i, 1);
+		}
+
+		if (p.x < 0 || p.x > 4000 || p.y < 0 || p.y > 4000)
+			projectiles.splice(i, 1);
+	}
+
+	for (let i = particles.length - 1; i >= 0; i--) {
+		const part = particles[i];
+		part.update();
+		if (part.life <= 0) particles.splice(i, 1);
+	}
+
+	if (Math.random() < 0.02) {
+		const typeRand = Math.random();
+		const type =
+			typeRand < 0.15 ? 'shooter' : typeRand < 0.35 ? 'fast' : 'normal';
+		spawnEnemy(type, enemies);
+	}
+}
+
+function draw() {
+	if (isPaused && player.hp <= 0) {
+		showGameOver();
+		return;
+	}
+	if (isPaused) {
+		drawUpgradeCards();
+		return;
+	}
+
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	// центр экрана
+	const camX = player.x - canvas.width / 2;
+	const camY = player.y - canvas.height / 2;
+
+	// фон карты
+	ctx.fillStyle = '#222';
+	ctx.fillRect(-camX, -camY, MAP_WIDTH, MAP_HEIGHT);
+
+	ctx.fillStyle = player.color;
+	ctx.beginPath();
+	ctx.arc(player.x - camX, player.y - camY, player.size, 0, Math.PI * 2);
+	ctx.fill();
+
+	enemies.forEach(e => {
+		ctx.fillStyle = e.color;
+		ctx.beginPath();
+		ctx.arc(e.x - camX, e.y - camY, e.size, 0, Math.PI * 2);
+		ctx.fill();
+	});
+
+	projectiles.forEach(p => {
+		ctx.fillStyle = p.color;
+		ctx.beginPath();
+		ctx.arc(p.x - camX, p.y - camY, p.size, 0, Math.PI * 2);
+		ctx.fill();
+	});
+
+	particles.forEach(part => {
+		ctx.fillStyle = part.color;
+		ctx.beginPath();
+		ctx.arc(part.x - camX, part.y - camY, 2, 0, Math.PI * 2);
+		ctx.fill();
+	});
+
+	ui.innerHTML = `HP: ${player.hp}/${player.maxHp} | Level: ${player.level} | XP: ${player.xp} | Enemies: ${enemies.length}`;
+}
+
+function loop() {
+	update();
+	draw();
+	requestAnimationFrame(loop);
+}
+
+loop();

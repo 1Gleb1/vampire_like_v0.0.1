@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Mini Vampire Survivors</title>
+		<style>
+			body {
+				margin: 0;
+				overflow: hidden;
+				background: #111;
+				color: white;
+				font-family: sans-serif;
+			}
+			canvas {
+				display: block;
+				margin: 0 auto;
+				background: #222;
+			}
+			#ui {
+				position: absolute;
+				top: 10px;
+				left: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="ui"></div>
+		<canvas id="game"></canvas>
+		<script type="module" src="./main.js"></script>
+		<style>
+			body,
+			html {
+				margin: 0;
+				padding: 0;
+				overflow: hidden; /* убираем скролл */
+				height: 100%;
+				width: 100%;
+				background: black; /* фон */
+			}
+			canvas {
+				display: block;
+			}
+		</style>
+	</body>
+</html>
