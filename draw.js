@@ -8,6 +8,7 @@ import {
 	particles,
 	player,
 	projectiles,
+	screenBlinks,
 } from './state.js';
 import { drawUpgradeCards, showGameOver, updateHud } from './ui.js';
 
@@ -139,6 +140,33 @@ export function draw() {
 		ctx.arc(part.x - camX, part.y - camY, 2, 0, Math.PI * 2);
 		ctx.fill();
 	});
+
+	if (screenBlinks.length > 0) {
+		const now = Date.now();
+		const cx = camera.canvas.width / 2;
+		const cy = camera.canvas.height / 2;
+		for (let i = screenBlinks.length - 1; i >= 0; i--) {
+			const blink = screenBlinks[i];
+			const t = (now - blink.start) / blink.duration;
+			if (t >= 1) {
+				screenBlinks.splice(i, 1);
+				continue;
+			}
+			const ease = 1 - Math.pow(1 - t, 3);
+			const maxRadius = Math.hypot(camera.canvas.width, camera.canvas.height);
+			const radius = ease * maxRadius;
+			const alpha = 0.3 * (1 - ease); 
+			const color = blink.color === 'yellow' ? '255,255,0' : blink.color === 'red' ? '255,0,0' : blink.color === 'cyan' ? '0,255,255' : '255,255,255';
+			const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+			gradient.addColorStop(0, `rgba(${color}, ${alpha})`);
+			gradient.addColorStop(0.5, `rgba(${color}, ${alpha * 0.4})`);
+			gradient.addColorStop(1, 'rgba(0,0,0,0)');
+			ctx.fillStyle = gradient;
+			ctx.beginPath();
+			ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+			ctx.fill();
+		}
+	}
 
 	if (
 		player.lastChainEffect &&

@@ -1,6 +1,6 @@
-import { MAP_WIDTH, MAP_HEIGHT } from './constants.js';
-import { Player } from './player.js';
 import { Camera } from './camera.js';
+import { MAP_HEIGHT, MAP_WIDTH } from './constants.js';
+import { Player } from './player.js';
 
 export const canvas = document.getElementById('game');
 export const ctx = canvas.getContext('2d');
@@ -37,10 +37,9 @@ export function setUpgradeCards(cards) {
 	upgradeCards = cards;
 }
 
-export { MAP_WIDTH, MAP_HEIGHT };
+export { MAP_HEIGHT, MAP_WIDTH };
 
-
-export let difficultyLevel = 1; 
+export let difficultyLevel = 1;
 export let nextDifficultyAt = Date.now() + 30000;
 export function resetDifficulty() {
 	difficultyLevel = 1;
@@ -50,6 +49,11 @@ export function maybeIncreaseDifficulty(now = Date.now()) {
 	if (now >= nextDifficultyAt) {
 		difficultyLevel++;
 		nextDifficultyAt = now + 30000;
+		triggerScreenBlink('yellow', 600);
 	}
 }
 
+export const screenBlinks = [];
+export function triggerScreenBlink(color = 'white', duration = 400) {
+	screenBlinks.push({ start: Date.now(), duration, color });
+}

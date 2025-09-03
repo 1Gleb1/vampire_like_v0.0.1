@@ -1,6 +1,6 @@
 import { MAP_HEIGHT, MAP_WIDTH } from './constants.js';
-import { difficultyLevel } from './state.js';
 import { Projectile } from './projectile.js';
+import { difficultyLevel } from './state.js';
 
 export class Enemy {
 	constructor(x, y, type = 'normal') {
@@ -11,7 +11,7 @@ export class Enemy {
 		const speedBase = type === 'fast' ? 3 : type === 'shooter' ? 1.2 : 1.5;
 		const hpBase = type === 'fast' ? 20 : type === 'shooter' ? 30 : 40;
 		const speedScale = 1 + (difficultyLevel - 1) * 0.05;
-		const hpScale = 1 + (difficultyLevel - 1) * 0.1; 
+		const hpScale = 1 + (difficultyLevel - 1) * 0.1;
 		this.speed = speedBase * speedScale;
 		this.maxHp = Math.round(hpBase * hpScale);
 		this.hp = this.maxHp;
@@ -42,12 +42,11 @@ export class Enemy {
 		const now = Date.now();
 		if (now - this.lastShot > this.fireRate) {
 			const angle = Math.atan2(player.y - this.y, player.x - this.x);
-			projectiles.push(new Projectile(this.x, this.y, angle, 4, 5, 'pink'));
+			projectiles.push(new Projectile(this.x, this.y, angle, 7, 5, 'pink'));
 			this.lastShot = now;
 		}
 	}
 }
-
 
 export function spawnEnemy(type = 'normal', enemies) {
 	const mapSize = 4000;

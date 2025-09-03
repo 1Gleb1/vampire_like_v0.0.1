@@ -1,20 +1,22 @@
-import { Particle } from './particle.js';
 import { spawnEnemy } from './enemy.js';
+import { Particle } from './particle.js';
 import {
-	MAP_WIDTH,
-	MAP_HEIGHT,
-	player,
 	camera,
+	difficultyLevel,
 	enemies,
-	projectiles,
-	particles,
-	keys,
 	isPaused,
+	keys,
+	MAP_HEIGHT,
+	MAP_WIDTH,
+	maybeIncreaseDifficulty,
 	mouseX,
 	mouseY,
+	particles,
+	player,
+	projectiles,
+	triggerScreenBlink,
 } from './state.js';
 import { showGameOver, showUpgradeCards } from './ui.js';
-import { difficultyLevel, maybeIncreaseDifficulty } from './state.js';
 
 export function update() {
 	if (isPaused) return;
@@ -36,6 +38,7 @@ export function update() {
 		e.shoot(player, projectiles);
 		if (Math.hypot(player.x - e.x, player.y - e.y) < player.size + e.size) {
 			player.hp -= e.type === 'fast' ? 1 : 2;
+			triggerScreenBlink('red', 250);
 		}
 	});
 
@@ -63,7 +66,8 @@ export function update() {
 				if (e.hp <= 0) {
 					enemies.splice(j, 1);
 					player.xp += 10;
-					for (let k = 0; k < 10; k++) particles.push(new Particle(e.x, e.y, e.color));
+					for (let k = 0; k < 10; k++)
+						particles.push(new Particle(e.x, e.y, e.color));
 
 					if (player.xp >= player.level * 50) {
 						player.level++;
@@ -83,10 +87,12 @@ export function update() {
 			Math.hypot(p.x - player.x, p.y - player.y) < p.size + player.size
 		) {
 			player.hp -= 5;
+			triggerScreenBlink('red', 250);
 			projectiles.splice(i, 1);
 		}
 
-		if (p.x < 0 || p.x > 4000 || p.y < 0 || p.y > 4000) projectiles.splice(i, 1);
+		if (p.x < 0 || p.x > 4000 || p.y < 0 || p.y > 4000)
+			projectiles.splice(i, 1);
 	}
 
 	for (let i = particles.length - 1; i >= 0; i--) {
@@ -96,13 +102,16 @@ export function update() {
 	}
 
 	const spawnChance = 0.02 + (difficultyLevel - 1) * 0.005;
-	if (Math.random() < Math.min(spawnChance, 0.15)) { 
+	if (Math.random() < Math.min(spawnChance, 0.15)) {
 		const typeRand = Math.random();
 		const shooterOdds = 0.15 + (difficultyLevel - 1) * 0.02;
 		const fastOdds = 0.35 + (difficultyLevel - 1) * 0.02;
-		const type = typeRand < shooterOdds ? 'shooter' : typeRand < fastOdds ? 'fast' : 'normal';
+		const type =
+			typeRand < shooterOdds
+				? 'shooter'
+				: typeRand < fastOdds
+				? 'fast'
+				: 'normal';
 		spawnEnemy(type, enemies);
 	}
 }
-
-
