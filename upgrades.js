@@ -1,17 +1,61 @@
-import { Weapon } from './weapon.js';
+const spellCategories = {
+	chainLightning: {
+		base: {
+			name: 'Цепная молния',
+			effect: player => {
+				player.hasChainLightning = true;
+			},
+		},
+		modifications: [
+			{
+				name: '+1 цель молнии',
+				effect: player => {
+					player.chainLightningTargets += 1;
+				},
+			},
+			{
+				name: 'Усиленная молния',
+				effect: player => {
+					player.chainLightningDamage += 15;
+				},
+			},
+			{
+				name: 'Радиус срабатывания молнии',
+				effect: player => {
+					player.chainLightningRadius += 50;
+				},
+			},
+			{
+				name: 'Радиус отскока молнии',
+				effect: player => {
+					player.chainLightningBounceRadius = 150;
+				},
+			},
+			{
+				name: 'Перезарядка молнии',
+				effect: player => {
+					player.chainLightningCooldown = Math.max(
+						1000,
+						player.chainLightningCooldown - 500
+					);
+				},
+			},
+			{
+				name: 'Длинная цепь',
+				effect: player => {
+					player.chainLightningMaxLength += 3;
+				},
+			},
+		],
+	},
+};
 
-export const allUpgrades = [
+const basicUpgrades = [
 	{ name: 'Стрельба веером', effect: player => player.weapons[0].setFanShot() },
 	{
 		name: 'Автоматическая стрельба',
 		effect: player => (player.fireRate = Math.max(50, player.fireRate - 100)),
 	},
-	{
-		name: 'Сфера вокруг',
-		effect: player => player.weapons.push(new Weapon('splash', 5, 5, 'orange')),
-	},
-
-	// Защита
 	{
 		name: 'Увеличение HP',
 		effect: player => {
@@ -19,21 +63,25 @@ export const allUpgrades = [
 			player.hp += 20;
 		},
 	},
-	// { name: 'Самовосстановление', effect: player => (player.selfHeal = true) },
-	// { name: 'Щит', effect: player => (player.hasShield = true) },
-
-	// Скорость
 	{ name: 'Скорость движения', effect: player => (player.speed += 0.5) },
-	{
-		name: 'Скорость пули',
-		effect: player => player.weapons.forEach(w => (w.speed += 1)),
-	},
-
-	// Особые способности
 	// {
-	// 	name: 'Взрыв при убийстве',
-	// 	effect: player => (player.hasExplosion = true),
+	// 	name: 'Скорость пули',
+	// 	effect: player => player.weapons.forEach(w => (w.speed += 1)),
 	// },
-	// { name: 'Замедление врагов', effect: player => (player.slowEnemies = true) },
-	// { name: 'Привлечение XP', effect: player => (player.xpMagnet = true) },
 ];
+
+export function getAvailableUpgrades(player) {
+	const availableUpgrades = [...basicUpgrades];
+
+	Object.values(spellCategories).forEach(spellCategory => {
+		if (spellCategory.base && !player.hasChainLightning) {
+			availableUpgrades.push(spellCategory.base);
+		} else if (spellCategory.modifications && player.hasChainLightning) {
+			availableUpgrades.push(...spellCategory.modifications);
+		}
+	});
+
+	return availableUpgrades;
+}
+
+export const allUpgrades = basicUpgrades;

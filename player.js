@@ -1,4 +1,5 @@
 import { MAP_HEIGHT, MAP_WIDTH } from './main.js';
+import { Particle } from './particle.js';
 import { Weapon } from './weapon.js';
 
 export class Player {
@@ -15,6 +16,17 @@ export class Player {
 		this.fireRate = 400;
 		this.lastShot = 0;
 		this.weapons = [new Weapon('aim', 7, 5, 'yellow')];
+
+		this.hasChainLightning = false;
+		this.chainLightningCooldown = 3000;
+		this.lastChainLightning = 0;
+		this.chainLightningRadius = 150;
+		this.chainLightningDamage = 30;
+		this.lastChainEffect = null;
+
+		this.chainLightningTargets = 1;
+		this.chainLightningBounceRadius = 100;
+		this.chainLightningMaxLength = 5;
 	}
 
 	move(keys) {
@@ -44,5 +56,115 @@ export class Player {
 			);
 			this.lastShot = now;
 		}
+	}
+
+	castChainLightning(enemies, particles) {
+		if (!this.hasChainLightning) return false;
+
+		const now = Date.now();
+		if (now - this.lastChainLightning < this.chainLightningCooldown)
+			return false;
+
+		const initialEnemies = [];
+		const hitEnemies = new Set();
+
+		for (
+			let targetIndex = 0;
+			targetIndex < this.chainLightningTargets;
+			targetIndex++
+		) {
+			let nearestEnemy = null;
+			let nearestDistance = Infinity;
+
+			enemies.forEach(enemy => {
+				if (hitEnemies.has(enemy)) return;
+
+				const distance = Math.hypot(this.x - enemy.x, this.y - enemy.y);
+				if (
+					distance <= this.chainLightningRadius &&
+					distance < nearestDistance
+				) {
+					nearestEnemy = enemy;
+					nearestDistance = distance;
+				}
+			});
+
+			if (nearestEnemy) {
+				initialEnemies.push(nearestEnemy);
+				hitEnemies.add(nearestEnemy);
+			} else {
+				break;
+			}
+		}
+
+		if (initialEnemies.length === 0) return false;
+
+		this.lastChainEffect = {
+			chains: [],
+			timestamp: now,
+		};
+
+		initialEnemies.forEach((initialEnemy, chainIndex) => {
+			const chainEnemies = [];
+			let currentEnemy = initialEnemy;
+			let chainCount = 0;
+
+			while (currentEnemy && chainCount < this.chainLightningMaxLength) {
+				chainEnemies.push({
+					x: currentEnemy.x,
+					y: currentEnemy.y,
+				});
+
+				currentEnemy.hp -= this.chainLightningDamage;
+
+				const particleCount = this.chainLightningTargets > 1 ? 20 : 15;
+				for (let i = 0; i < particleCount; i++) {
+					particles.push(
+						new Particle(currentEnemy.x, currentEnemy.y, '#00ffff')
+					);
+				}
+
+				if (currentEnemy.hp <= 0) {
+					const enemyIndex = enemies.indexOf(currentEnemy);
+					if (enemyIndex > -1) {
+						enemies.splice(enemyIndex, 1);
+						this.xp += 10;
+						for (let k = 0; k < 10; k++) {
+							particles.push(
+								new Particle(currentEnemy.x, currentEnemy.y, currentEnemy.color)
+							);
+						}
+					}
+				}
+
+				let nextEnemy = null;
+				let nextDistance = Infinity;
+
+				enemies.forEach(enemy => {
+					if (hitEnemies.has(enemy)) return;
+
+					const distance = Math.hypot(
+						currentEnemy.x - enemy.x,
+						currentEnemy.y - enemy.y
+					);
+					if (
+						distance <= this.chainLightningBounceRadius &&
+						distance < nextDistance
+					) {
+						nextEnemy = enemy;
+						nextDistance = distance;
+					}
+				});
+
+				currentEnemy = nextEnemy;
+				if (currentEnemy) hitEnemies.add(currentEnemy);
+				chainCount++;
+			}
+
+			this.lastChainEffect.chains.push(chainEnemies);
+		});
+
+		this.lastChainLightning = now;
+		return true;
 	}
 }

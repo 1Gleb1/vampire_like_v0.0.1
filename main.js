@@ -2,7 +2,7 @@ import { Camera } from './camera.js';
 import { spawnEnemy } from './enemy.js';
 import { Particle } from './particle.js';
 import { Player } from './player.js';
-import { allUpgrades } from './upgrades.js';
+import { getAvailableUpgrades } from './upgrades.js';
 
 let mouseX = 0;
 let mouseY = 0;
@@ -47,7 +47,10 @@ document.addEventListener('keyup', e => (keys[e.key] = false));
 function showUpgradeCards() {
 	isPaused = true;
 	upgradeCards = [];
-	const shuffled = allUpgrades.sort(() => 0.5 - Math.random());
+
+	const availableUpgrades = getAvailableUpgrades(player);
+
+	const shuffled = availableUpgrades.sort(() => 0.5 - Math.random());
 	upgradeCards = shuffled.slice(0, 3);
 	drawUpgradeCards();
 }
@@ -73,11 +76,17 @@ canvas.addEventListener('click', e => {
 	const mx = e.clientX - rect.left;
 	const my = e.clientY - rect.top;
 
+	const cardWidth = 150;
+	const cardSpacing = 30;
+	const totalWidth =
+		upgradeCards.length * cardWidth + (upgradeCards.length - 1) * cardSpacing;
+	const startX = (canvas.width - totalWidth) / 2;
+
 	upgradeCards.forEach((card, index) => {
-		const x = 150 + index * 180;
+		const x = startX + index * (cardWidth + cardSpacing);
 		const y = canvas.height / 2 - 60;
-		const w = 150,
-			h = 120;
+		const w = cardWidth;
+		const h = 120;
 		if (mx >= x && mx <= x + w && my >= y && my <= y + h) {
 			card.effect(player);
 			isPaused = false;
@@ -92,17 +101,24 @@ function drawUpgradeCards() {
 
 	ctx.fillRect(-camX, -camY, MAP_WIDTH, MAP_HEIGHT);
 
+	const cardWidth = 150;
+	const cardSpacing = 30;
+	const totalWidth =
+		upgradeCards.length * cardWidth + (upgradeCards.length - 1) * cardSpacing;
+	const startX = (canvas.width - totalWidth) / 2;
+
 	upgradeCards.forEach((card, index) => {
-		const x = 150 + index * 180;
+		const x = startX + index * (cardWidth + cardSpacing);
 		const y = canvas.height / 2 - 60;
-		const w = 150,
-			h = 120;
+		const w = cardWidth;
+		const h = 120;
 
 		ctx.fillStyle = 'white';
 		ctx.fillRect(x, y, w, h);
 		ctx.fillStyle = 'black';
 		ctx.font = '16px sans-serif';
-		ctx.fillText(card.name, x + 10, y + 60);
+		ctx.textAlign = 'center';
+		ctx.fillText(card.name, x + w / 2, y + 60);
 	});
 }
 
@@ -117,6 +133,9 @@ function update() {
 
 	player.move(keys);
 	player.shoot(projectiles, mouseX, mouseY, camera);
+
+	player.castChainLightning(enemies, particles);
+
 	camera.update();
 
 	enemies.forEach(e => {
@@ -218,11 +237,66 @@ function draw() {
 	ctx.arc(player.x - camX, player.y - camY, player.size, 0, Math.PI * 2);
 	ctx.fill();
 
+	if (player.hasChainLightning) {
+		const isOnCooldown =
+			Date.now() - player.lastChainLightning < player.chainLightningCooldown;
+		ctx.strokeStyle = isOnCooldown
+			? 'rgba(255, 0, 0, 0.3)'
+			: 'rgba(0, 255, 255, 0.3)';
+		ctx.lineWidth = 1;
+		ctx.beginPath();
+		ctx.arc(
+			player.x - camX,
+			player.y - camY,
+			player.chainLightningRadius,
+			0,
+			Math.PI * 2
+		);
+		ctx.stroke();
+
+		if (!isOnCooldown) {
+			ctx.strokeStyle = 'rgba(255, 255, 0, 0.2)';
+			ctx.lineWidth = 1;
+			ctx.beginPath();
+			ctx.arc(
+				player.x - camX,
+				player.y - camY,
+				player.chainLightningBounceRadius,
+				0,
+				Math.PI * 2
+			);
+			ctx.stroke();
+		}
+	}
+
 	enemies.forEach(e => {
 		ctx.fillStyle = e.color;
 		ctx.beginPath();
 		ctx.arc(e.x - camX, e.y - camY, e.size, 0, Math.PI * 2);
 		ctx.fill();
+
+		const maxHp = e.type === 'fast' ? 20 : e.type === 'shooter' ? 30 : 40;
+		const hpBarWidth = e.size * 2;
+		const hpBarHeight = 4;
+		const hpBarX = e.x - camX - hpBarWidth / 2;
+		const hpBarY = e.y - camY - e.size - 10;
+
+		ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+		ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+
+		const hpPercentage = e.hp / maxHp;
+		const fillWidth = hpBarWidth * hpPercentage;
+		ctx.fillStyle =
+			hpPercentage > 0.5
+				? '#00ff00'
+				: hpPercentage > 0.25
+				? '#ffff00'
+				: '#ff0000';
+		ctx.fillRect(hpBarX, hpBarY, fillWidth, hpBarHeight);
+
+		ctx.strokeStyle = 'white';
+		ctx.lineWidth = 1;
+		ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
 	});
 
 	projectiles.forEach(p => {
@@ -239,7 +313,46 @@ function draw() {
 		ctx.fill();
 	});
 
-	ui.innerHTML = `HP: ${player.hp}/${player.maxHp} | Level: ${player.level} | XP: ${player.xp} | Enemies: ${enemies.length}`;
+	if (
+		player.lastChainEffect &&
+		Date.now() - player.lastChainEffect.timestamp < 500
+	) {
+		ctx.strokeStyle = 'rgba(0, 255, 255, 0.8)';
+		ctx.lineWidth = 3;
+
+		player.lastChainEffect.chains.forEach((chain, chainIndex) => {
+			for (let i = 0; i < chain.length - 1; i++) {
+				const current = chain[i];
+				const next = chain[i + 1];
+
+				ctx.beginPath();
+				ctx.moveTo(current.x - camX, current.y - camY);
+				ctx.lineTo(next.x - camX, next.y - camY);
+				ctx.stroke();
+			}
+
+			if (chain.length > 0) {
+				const first = chain[0];
+				ctx.beginPath();
+				ctx.moveTo(player.x - camX, player.y - camY);
+				ctx.lineTo(first.x - camX, first.y - camY);
+				ctx.stroke();
+			}
+		});
+	}
+
+	ui.innerHTML = `HP: ${player.hp}/${player.maxHp} | Level: ${
+		player.level
+	} | XP: ${player.xp} | Enemies: ${enemies.length}${
+		player.hasChainLightning
+			? ` | Chain Lightning: ${
+					Date.now() - player.lastChainLightning >=
+					player.chainLightningCooldown
+						? 'Ready'
+						: 'Cooldown'
+			  }`
+			: ''
+	}`;
 }
 
 function loop() {

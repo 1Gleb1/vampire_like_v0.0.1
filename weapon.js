@@ -17,14 +17,12 @@ export class Weapon {
 				new Projectile(x, y, angle, this.speed, this.size, this.color)
 			);
 		} else if (this.type === 'multi') {
-			// все кастомные направления
 			this.customAngles.forEach(a =>
 				projectiles.push(
 					new Projectile(x, y, a, this.speed, this.size, this.color)
 				)
 			);
 		} else if (this.type === 'fan') {
-			// веерная стрельба: 5 пуль веером вокруг направления курсора
 			const centerAngle = Math.atan2(targetY - y, targetX - x);
 			const spread = Math.PI / 6; // 30 градусов
 			const count = 5;
