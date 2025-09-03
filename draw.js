@@ -26,8 +26,32 @@ export function draw() {
 	const camX = player.x - camera.canvas.width / 2;
 	const camY = player.y - camera.canvas.height / 2;
 
+	const gridSize = 150;
+	const startX = Math.max(0, Math.floor(camX / gridSize) * gridSize);
+	const startY = Math.max(0, Math.floor(camY / gridSize) * gridSize);
+	const endX = Math.min(
+		MAP_WIDTH,
+		Math.ceil((camX + camera.canvas.width) / gridSize) * gridSize
+	);
+	const endY = Math.min(
+		MAP_HEIGHT,
+		Math.ceil((camY + camera.canvas.height) / gridSize) * gridSize
+	);
+
 	ctx.fillStyle = '#222';
-	ctx.fillRect(-camX, -camY, MAP_WIDTH, MAP_HEIGHT);
+	ctx.strokeStyle = '#444';
+	ctx.lineWidth = 1;
+
+	for (let gx = startX; gx < endX; gx += gridSize) {
+		for (let gy = startY; gy < endY; gy += gridSize) {
+			const drawX = gx - camX;
+			const drawY = gy - camY;
+			const drawWidth = Math.min(gridSize, MAP_WIDTH - gx);
+			const drawHeight = Math.min(gridSize, MAP_HEIGHT - gy);
+			ctx.fillRect(drawX, drawY, drawWidth, drawHeight);
+			ctx.strokeRect(drawX, drawY, drawWidth, drawHeight);
+		}
+	}
 
 	ctx.fillStyle = player.color;
 	ctx.beginPath();

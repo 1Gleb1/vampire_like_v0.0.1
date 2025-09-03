@@ -1,4 +1,12 @@
-import { ctx, canvas, ui, player, upgradeCards, setPaused, isPaused } from './state.js';
+import {
+	canvas,
+	ctx,
+	isPaused,
+	player,
+	setPaused,
+	ui,
+	upgradeCards,
+} from './state.js';
 import { getAvailableUpgrades } from './upgrades.js';
 
 export function showUpgradeCards() {
@@ -53,7 +61,7 @@ export function bindUpgradeClick() {
 }
 
 export function drawUpgradeCards() {
-	ctx.fillStyle = 'rgba(0,0,0,0.8)';
+	ctx.fillStyle = 'rgba(32, 32, 32, 0.66)';
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 	const cardWidth = 150;
@@ -80,7 +88,7 @@ export function drawUpgradeCards() {
 export function updateHud(enemiesCount) {
 	ui.innerHTML = `HP: ${player.hp}/${player.maxHp} | Level: ${
 		player.level
-	} | XP: ${player.xp} | Enemies: ${enemiesCount}${
+	} | XP: ${player.xp} / ${player.level * 50} | Enemies: ${enemiesCount}${
 		player.hasChainLightning
 			? ` | Chain Lightning: ${
 					Date.now() - player.lastChainLightning >=
@@ -91,5 +99,3 @@ export function updateHud(enemiesCount) {
 			: ''
 	}`;
 }
-
-
