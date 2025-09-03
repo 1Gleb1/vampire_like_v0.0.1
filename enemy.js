@@ -1,4 +1,4 @@
-import { MAP_HEIGHT, MAP_WIDTH } from './main.js';
+import { MAP_HEIGHT, MAP_WIDTH } from './constants.js';
 import { Projectile } from './projectile.js';
 
 export class Enemy {
