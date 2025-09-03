@@ -1,4 +1,5 @@
 import { MAP_HEIGHT, MAP_WIDTH } from './constants.js';
+import { difficultyLevel } from './state.js';
 import { Projectile } from './projectile.js';
 
 export class Enemy {
@@ -7,11 +8,18 @@ export class Enemy {
 		this.y = y;
 		this.type = type;
 		this.size = type === 'fast' ? 15 : type === 'shooter' ? 20 : 25;
-		this.speed = type === 'fast' ? 3 : type === 'shooter' ? 1.2 : 1.5;
-		this.hp = type === 'fast' ? 20 : type === 'shooter' ? 30 : 40;
+		const speedBase = type === 'fast' ? 3 : type === 'shooter' ? 1.2 : 1.5;
+		const hpBase = type === 'fast' ? 20 : type === 'shooter' ? 30 : 40;
+		const speedScale = 1 + (difficultyLevel - 1) * 0.05;
+		const hpScale = 1 + (difficultyLevel - 1) * 0.1; 
+		this.speed = speedBase * speedScale;
+		this.maxHp = Math.round(hpBase * hpScale);
+		this.hp = this.maxHp;
 		this.color =
 			type === 'fast' ? 'orange' : type === 'shooter' ? 'purple' : 'red';
-		this.fireRate = type === 'shooter' ? 1500 : 0;
+		const fireBase = 1500;
+		const fireScale = Math.max(600, fireBase - (difficultyLevel - 1) * 75);
+		this.fireRate = type === 'shooter' ? fireScale : 0;
 		this.lastShot = 0;
 	}
 

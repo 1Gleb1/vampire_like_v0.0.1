@@ -6,6 +6,8 @@ import {
 	setPaused,
 	ui,
 	upgradeCards,
+	difficultyLevel,
+	nextDifficultyAt,
 } from './state.js';
 import { getAvailableUpgrades } from './upgrades.js';
 
@@ -86,7 +88,8 @@ export function drawUpgradeCards() {
 }
 
 export function updateHud(enemiesCount) {
-	ui.innerHTML = `HP: ${player.hp}/${player.maxHp} | Level: ${
+	const secondsLeft = Math.max(0, Math.ceil((nextDifficultyAt - Date.now()) / 1000));
+	ui.innerHTML = `<div>HP: ${player.hp}/${player.maxHp} | Level: ${
 		player.level
 	} | XP: ${player.xp} / ${player.level * 50} | Enemies: ${enemiesCount}${
 		player.hasChainLightning
@@ -97,5 +100,5 @@ export function updateHud(enemiesCount) {
 						: 'Cooldown'
 			  }`
 			: ''
-	}`;
+	}</div><div>Difficulty: ${difficultyLevel} | Next in: ${secondsLeft}s</div>`;
 }

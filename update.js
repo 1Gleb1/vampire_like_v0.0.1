@@ -14,9 +14,12 @@ import {
 	mouseY,
 } from './state.js';
 import { showGameOver, showUpgradeCards } from './ui.js';
+import { difficultyLevel, maybeIncreaseDifficulty } from './state.js';
 
 export function update() {
 	if (isPaused) return;
+
+	maybeIncreaseDifficulty();
 
 	if (player.hp <= 0) {
 		showGameOver();
@@ -92,9 +95,12 @@ export function update() {
 		if (part.life <= 0) particles.splice(i, 1);
 	}
 
-	if (Math.random() < 0.02) {
+	const spawnChance = 0.02 + (difficultyLevel - 1) * 0.005;
+	if (Math.random() < Math.min(spawnChance, 0.15)) { 
 		const typeRand = Math.random();
-		const type = typeRand < 0.15 ? 'shooter' : typeRand < 0.35 ? 'fast' : 'normal';
+		const shooterOdds = 0.15 + (difficultyLevel - 1) * 0.02;
+		const fastOdds = 0.35 + (difficultyLevel - 1) * 0.02;
+		const type = typeRand < shooterOdds ? 'shooter' : typeRand < fastOdds ? 'fast' : 'normal';
 		spawnEnemy(type, enemies);
 	}
 }

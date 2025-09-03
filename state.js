@@ -40,3 +40,16 @@ export function setUpgradeCards(cards) {
 export { MAP_WIDTH, MAP_HEIGHT };
 
 
+export let difficultyLevel = 1; 
+export let nextDifficultyAt = Date.now() + 30000;
+export function resetDifficulty() {
+	difficultyLevel = 1;
+	nextDifficultyAt = Date.now() + 30000;
+}
+export function maybeIncreaseDifficulty(now = Date.now()) {
+	if (now >= nextDifficultyAt) {
+		difficultyLevel++;
+		nextDifficultyAt = now + 30000;
+	}
+}
+

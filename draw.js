@@ -96,16 +96,16 @@ export function draw() {
 		ctx.arc(e.x - camX, e.y - camY, e.size, 0, Math.PI * 2);
 		ctx.fill();
 
-		const maxHp = e.type === 'fast' ? 20 : e.type === 'shooter' ? 30 : 40;
-		const hpBarWidth = e.size * 2;
-		const hpBarHeight = 4;
+		const maxHp = e.maxHp ?? (e.type === 'fast' ? 20 : e.type === 'shooter' ? 30 : 40);
+		const hpBarWidth = 50;
+		const hpBarHeight = 6;
 		const hpBarX = e.x - camX - hpBarWidth / 2;
 		const hpBarY = e.y - camY - e.size - 10;
 
 		ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
 		ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
 
-		const hpPercentage = e.hp / maxHp;
+		const hpPercentage = Math.max(0, Math.min(1, e.hp / maxHp));
 		const fillWidth = hpBarWidth * hpPercentage;
 		ctx.fillStyle =
 			hpPercentage > 0.5
@@ -117,7 +117,13 @@ export function draw() {
 
 		ctx.strokeStyle = 'white';
 		ctx.lineWidth = 1;
-		ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+		// ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+
+		ctx.fillStyle = 'white';
+		ctx.font = '10px sans-serif';
+		ctx.textAlign = 'center';
+		ctx.textBaseline = 'middle';
+		// ctx.fillText(`${e.hp}/${maxHp}`, hpBarX + hpBarWidth / 2, hpBarY + hpBarHeight / 2 + 0.5); // колличество здоровья у врага
 	});
 
 	projectiles.forEach(p => {
