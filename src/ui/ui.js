@@ -1,13 +1,13 @@
 import {
 	canvas,
 	ctx,
+	difficultyLevel,
 	isPaused,
+	nextDifficultyAt,
 	player,
 	setPaused,
 	ui,
 	upgradeCards,
-	difficultyLevel,
-	nextDifficultyAt,
 } from '../shared/lib/state.js';
 import { getAvailableUpgrades } from '../systems/upgrades.js';
 
@@ -87,8 +87,28 @@ export function drawUpgradeCards() {
 	});
 }
 
+export function drawPauseOverlay() {
+	ctx.fillStyle = 'rgba(0,0,0,0.6)';
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+	ctx.fillStyle = 'white';
+	ctx.textAlign = 'center';
+	ctx.font = '48px sans-serif';
+	ctx.fillText('ПАУЗА', canvas.width / 2, canvas.height / 2 - 40);
+
+	ctx.font = '20px sans-serif';
+	ctx.fillText(
+		'Нажмите Esc, чтобы продолжить',
+		canvas.width / 2,
+		canvas.height / 2 + 4
+	);
+}
+
 export function updateHud(enemiesCount) {
-	const secondsLeft = Math.max(0, Math.ceil((nextDifficultyAt - Date.now()) / 1000));
+	const secondsLeft = Math.max(
+		0,
+		Math.ceil((nextDifficultyAt - Date.now()) / 1000)
+	);
 	ui.innerHTML = `<div>HP: ${player.hp}/${player.maxHp} | Level: ${
 		player.level
 	} | XP: ${player.xp} / ${player.level * 50} | Enemies: ${enemiesCount}${

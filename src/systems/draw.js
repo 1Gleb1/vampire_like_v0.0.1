@@ -9,8 +9,9 @@ import {
 	player,
 	projectiles,
 	screenBlinks,
+	upgradeCards,
 } from '../shared/lib/state.js';
-import { drawUpgradeCards, showGameOver, updateHud } from '../ui/ui.js';
+import { drawUpgradeCards, showGameOver, updateHud, drawPauseOverlay } from '../ui/ui.js';
 
 export function draw() {
 	if (player.hp <= 0) {
@@ -18,7 +19,13 @@ export function draw() {
 		return;
 	}
 	if (isPaused) {
-		drawUpgradeCards();
+		if (player.hp > 0) {
+			if (typeof upgradeCards !== 'undefined' && upgradeCards.length > 0) {
+				drawUpgradeCards();
+			} else {
+				drawPauseOverlay();
+			}
+		}
 		return;
 	}
 

@@ -1,5 +1,6 @@
 const spellCategories = {
 	chainLightning: {
+		flag: 'hasChainLightning',
 		base: {
 			name: 'Цепная молния',
 			effect: player => {
@@ -48,10 +49,44 @@ const spellCategories = {
 			},
 		],
 	},
+	fanShot: {
+		flag: 'hasFanShot',
+		base: {
+			name: 'Стрельба веером',
+			effect: player => {
+				player.hasFanShot = true;
+				if (player.weapons && player.weapons[0]) player.weapons[0].setFanShot();
+			},
+		},
+		modifications: [
+			{
+				name: '+1 пуля веера',
+				effect: player => {
+					const w = player.weapons && player.weapons[0];
+					if (w && typeof w.increaseFanCount === 'function')
+						w.increaseFanCount(1);
+				},
+			},
+			{
+				name: 'Шире веер',
+				effect: player => {
+					const w = player.weapons && player.weapons[0];
+					if (w && typeof w.increaseFanSpread === 'function')
+						w.increaseFanSpread(Math.PI / 18);
+				},
+			},
+			{
+				name: 'Быстрые пули (веер)',
+				effect: player => {
+					const w = player.weapons && player.weapons[0];
+					if (w) w.speed += 1;
+				},
+			},
+		],
+	},
 };
 
 const basicUpgrades = [
-	{ name: 'Стрельба веером', effect: player => player.weapons[0].setFanShot() },
 	{
 		name: 'Автоматическая стрельба',
 		effect: player => (player.fireRate = Math.max(50, player.fireRate - 100)),
@@ -74,9 +109,10 @@ export function getAvailableUpgrades(player) {
 	const availableUpgrades = [...basicUpgrades];
 
 	Object.values(spellCategories).forEach(spellCategory => {
-		if (spellCategory.base && !player.hasChainLightning) {
+		const flag = spellCategory.flag;
+		if (spellCategory.base && flag && !player[flag]) {
 			availableUpgrades.push(spellCategory.base);
-		} else if (spellCategory.modifications && player.hasChainLightning) {
+		} else if (spellCategory.modifications && flag && player[flag]) {
 			availableUpgrades.push(...spellCategory.modifications);
 		}
 	});

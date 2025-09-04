@@ -8,6 +8,8 @@ export class Weapon {
 		this.color = color;
 		this.damage = 20;
 		this.customAngles = [0];
+		this.fanSpread = Math.PI / 6; // default 30°
+		this.fanCount = 5;
 	}
 
 	fire(x, y, projectiles, targetX, targetY) {
@@ -24,8 +26,8 @@ export class Weapon {
 			);
 		} else if (this.type === 'fan') {
 			const centerAngle = Math.atan2(targetY - y, targetX - x);
-			const spread = Math.PI / 6; // 30 градусов
-			const count = 5;
+			const spread = this.fanSpread;
+			const count = this.fanCount;
 			for (let i = 0; i < count; i++) {
 				const angle = centerAngle - spread / 2 + (spread / (count - 1)) * i;
 				projectiles.push(
@@ -65,6 +67,14 @@ export class Weapon {
 
 	setFanShot() {
 		this.type = 'fan';
+	}
+
+	increaseFanCount(delta = 1) {
+		this.fanCount = Math.max(2, this.fanCount + delta);
+	}
+
+	increaseFanSpread(delta = Math.PI / 18) {
+		this.fanSpread = Math.min(Math.PI, this.fanSpread + delta);
 	}
 
 	addExtraBullet() {

@@ -18,6 +18,7 @@ export class Player {
 		this.weapons = [new Weapon('aim', 7, 5, 'yellow')];
 
 		this.hasChainLightning = false;
+		this.hasFanShot = false;
 		this.chainLightningCooldown = 3000;
 		this.lastChainLightning = 0;
 		this.chainLightningRadius = 150;
