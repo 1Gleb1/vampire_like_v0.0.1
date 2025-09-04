@@ -1,6 +1,6 @@
-import { MAP_HEIGHT, MAP_WIDTH } from './constants.js';
+import { MAP_HEIGHT, MAP_WIDTH } from '../core/constants.js';
 import { Projectile } from './projectile.js';
-import { difficultyLevel } from './state.js';
+import { difficultyLevel } from '../shared/lib/state.js';
 
 export class Enemy {
 	constructor(x, y, type = 'normal') {

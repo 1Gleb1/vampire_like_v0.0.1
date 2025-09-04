@@ -9,8 +9,8 @@ import {
 	player,
 	projectiles,
 	screenBlinks,
-} from './state.js';
-import { drawUpgradeCards, showGameOver, updateHud } from './ui.js';
+} from '../shared/lib/state.js';
+import { drawUpgradeCards, showGameOver, updateHud } from '../ui/ui.js';
 
 export function draw() {
 	if (player.hp <= 0) {

@@ -1,4 +1,4 @@
-import { canvas, keys, setMouse, isPaused } from './state.js';
+import { canvas, keys, setMouse, isPaused } from '../shared/lib/state.js';
 
 export function initInput() {
 	canvas.addEventListener('mousemove', e => {

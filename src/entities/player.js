@@ -1,4 +1,4 @@
-import { MAP_HEIGHT, MAP_WIDTH } from './constants.js';
+import { MAP_HEIGHT, MAP_WIDTH } from '../core/constants.js';
 import { Particle } from './particle.js';
 import { Weapon } from './weapon.js';
 

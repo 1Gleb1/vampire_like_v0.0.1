@@ -1,5 +1,6 @@
-import { spawnEnemy } from './enemy.js';
-import { Particle } from './particle.js';
+import { spawnEnemy } from '../entities/enemy.js';
+import { Particle } from '../entities/particle.js';
+import { showGameOver, showUpgradeCards } from '../ui/ui.js';
 import {
 	camera,
 	difficultyLevel,
@@ -15,8 +16,7 @@ import {
 	player,
 	projectiles,
 	triggerScreenBlink,
-} from './state.js';
-import { showGameOver, showUpgradeCards } from './ui.js';
+} from '../shared/lib/state.js';
 
 export function update() {
 	if (isPaused) return;

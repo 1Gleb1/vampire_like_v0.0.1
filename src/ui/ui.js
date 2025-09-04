@@ -8,8 +8,8 @@ import {
 	upgradeCards,
 	difficultyLevel,
 	nextDifficultyAt,
-} from './state.js';
-import { getAvailableUpgrades } from './upgrades.js';
+} from '../shared/lib/state.js';
+import { getAvailableUpgrades } from '../systems/upgrades.js';
 
 export function showUpgradeCards() {
 	setPaused(true);
