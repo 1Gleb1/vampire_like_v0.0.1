@@ -84,6 +84,16 @@ const spellCategories = {
 			},
 		],
 	},
+	rotatingBlade: {
+		flag: 'hasRotatingBlade',
+		base: {
+			name: 'Вращающееся лезвие',
+			effect: player => {
+				player.hasRotatingBlade = true;
+			},
+		},
+		modifications: [],
+	},
 };
 
 const basicUpgrades = [

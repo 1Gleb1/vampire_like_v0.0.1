@@ -71,6 +71,21 @@ export function draw() {
 	ctx.arc(player.x - camX, player.y - camY, player.size, 0, Math.PI * 2);
 	ctx.fill();
 
+	if (player.hasRotatingBlade && Array.isArray(player.rotatingBlades)) {
+		ctx.fillStyle = 'gray';
+		player.rotatingBlades.forEach(b => {
+			ctx.beginPath();
+			ctx.arc(
+				b.x - camX,
+				b.y - camY,
+				player.rotatingBladeSize || 8,
+				0,
+				Math.PI * 2
+			);
+			ctx.fill();
+		});
+	}
+
 	if (player.hasChainLightning) {
 		const isOnCooldown =
 			Date.now() - player.lastChainLightning < player.chainLightningCooldown;

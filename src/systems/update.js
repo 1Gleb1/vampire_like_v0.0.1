@@ -31,6 +31,7 @@ export function update() {
 	player.move(keys);
 	player.shoot(projectiles, mouseX, mouseY, camera);
 	player.castChainLightning(enemies, particles);
+	player.updateRotatingBlades(enemies, particles);
 	camera.update();
 
 	enemies.forEach(e => {

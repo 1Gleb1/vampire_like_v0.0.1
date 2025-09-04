@@ -1,4 +1,5 @@
 import { MAP_HEIGHT, MAP_WIDTH } from '../core/constants.js';
+import { showUpgradeCards } from '../ui/ui.js';
 import { Particle } from './particle.js';
 import { Weapon } from './weapon.js';
 
@@ -17,17 +18,29 @@ export class Player {
 		this.lastShot = 0;
 		this.weapons = [new Weapon('aim', 7, 5, 'yellow')];
 
-		this.hasChainLightning = false;
 		this.hasFanShot = false;
+
+		this.hasChainLightning = false;
 		this.chainLightningCooldown = 3000;
 		this.lastChainLightning = 0;
 		this.chainLightningRadius = 150;
-		this.chainLightningDamage = 30;
+		this.chainLightningDamage = 3000;
 		this.lastChainEffect = null;
 
 		this.chainLightningTargets = 1;
 		this.chainLightningBounceRadius = 100;
 		this.chainLightningMaxLength = 5;
+
+		this.hasRotatingBlade = true;
+		this.rotatingBlades = [];
+		this.rotatingBladeCount = 3;
+		this.rotatingBladeRadius = 120;
+		this.rotatingBladeSpeed = 0.03;
+		this.rotatingBladeSize = 8;
+		this.rotatingBladeDamage = 12;
+		this.rotatingBladeAngle = 0;
+		this.rotatingBladeHitCooldownMs = 200;
+		this._rotatingBladeLastHitAt = new Map();
 	}
 
 	move(keys) {
@@ -167,5 +180,56 @@ export class Player {
 
 		this.lastChainLightning = now;
 		return true;
+	}
+
+	updateRotatingBlades(enemies, particles) {
+		if (!this.hasRotatingBlade) return;
+
+		if (!Array.isArray(this.rotatingBlades)) this.rotatingBlades = [];
+		if (this.rotatingBlades.length !== this.rotatingBladeCount) {
+			this.rotatingBlades = [];
+			for (let i = 0; i < this.rotatingBladeCount; i++) {
+				this.rotatingBlades.push({
+					angle: (i / this.rotatingBladeCount) * Math.PI * 2,
+					x: this.x,
+					y: this.y,
+				});
+			}
+		}
+
+		this.rotatingBladeAngle += this.rotatingBladeSpeed;
+
+		const now = Date.now();
+		for (let i = 0; i < this.rotatingBlades.length; i++) {
+			const blade = this.rotatingBlades[i];
+			const ang = blade.angle + this.rotatingBladeAngle;
+			blade.x = this.x + Math.cos(ang) * this.rotatingBladeRadius;
+			blade.y = this.y + Math.sin(ang) * this.rotatingBladeRadius;
+
+			for (let j = enemies.length - 1; j >= 0; j--) {
+				const e = enemies[j];
+				const dist = Math.hypot(blade.x - e.x, blade.y - e.y);
+				if (dist < this.rotatingBladeSize + e.size) {
+					const lastHit = this._rotatingBladeLastHitAt.get(e) || 0;
+					if (now - lastHit < this.rotatingBladeHitCooldownMs) continue;
+					this._rotatingBladeLastHitAt.set(e, now);
+
+					e.hp -= this.rotatingBladeDamage;
+					for (let k = 0; k < 6; k++)
+						particles.push(new Particle(e.x, e.y, e.color));
+					if (e.hp <= 0) {
+						enemies.splice(j, 1);
+						this.xp += 10;
+						for (let k = 0; k < 10; k++)
+							particles.push(new Particle(e.x, e.y, e.color));
+						if (this.xp >= this.level * 50) {
+							this.level++;
+							this.xp = 0;
+							showUpgradeCards();
+						}
+					}
+				}
+			}
+		}
 	}
 }
