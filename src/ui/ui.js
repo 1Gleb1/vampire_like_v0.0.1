@@ -6,6 +6,7 @@ import {
 	nextDifficultyAt,
 	player,
 	setPaused,
+	setUpgradeCards,
 	ui,
 	upgradeCards,
 } from '../shared/lib/state.js';
@@ -57,6 +58,7 @@ export function bindUpgradeClick() {
 			if (mx >= x && mx <= x + w && my >= y && my <= y + h) {
 				card.effect(player);
 				setPaused(false);
+				setUpgradeCards([]);
 			}
 		});
 	});

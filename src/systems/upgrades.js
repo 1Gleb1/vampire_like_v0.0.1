@@ -29,7 +29,7 @@ const spellCategories = {
 			{
 				name: 'Радиус отскока молнии',
 				effect: player => {
-					player.chainLightningBounceRadius = 150;
+					player.chainLightningBounceRadius += 50;
 				},
 			},
 			{

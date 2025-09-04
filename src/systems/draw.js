@@ -11,7 +11,12 @@ import {
 	screenBlinks,
 	upgradeCards,
 } from '../shared/lib/state.js';
-import { drawUpgradeCards, showGameOver, updateHud, drawPauseOverlay } from '../ui/ui.js';
+import {
+	drawPauseOverlay,
+	drawUpgradeCards,
+	showGameOver,
+	updateHud,
+} from '../ui/ui.js';
 
 export function draw() {
 	if (player.hp <= 0) {
@@ -104,7 +109,8 @@ export function draw() {
 		ctx.arc(e.x - camX, e.y - camY, e.size, 0, Math.PI * 2);
 		ctx.fill();
 
-		const maxHp = e.maxHp ?? (e.type === 'fast' ? 20 : e.type === 'shooter' ? 30 : 40);
+		const maxHp =
+			e.maxHp ?? (e.type === 'fast' ? 20 : e.type === 'shooter' ? 30 : 40);
 		const hpBarWidth = 50;
 		const hpBarHeight = 6;
 		const hpBarX = e.x - camX - hpBarWidth / 2;
@@ -162,8 +168,15 @@ export function draw() {
 			const ease = 1 - Math.pow(1 - t, 3);
 			const maxRadius = Math.hypot(camera.canvas.width, camera.canvas.height);
 			const radius = ease * maxRadius;
-			const alpha = 0.3 * (1 - ease); 
-			const color = blink.color === 'yellow' ? '255,255,0' : blink.color === 'red' ? '255,0,0' : blink.color === 'cyan' ? '0,255,255' : '255,255,255';
+			const alpha = 0.3 * (1 - ease);
+			const color =
+				blink.color === 'yellow'
+					? '255,255,0'
+					: blink.color === 'red'
+					? '255,0,0'
+					: blink.color === 'cyan'
+					? '0,255,255'
+					: '255,255,255';
 			const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
 			gradient.addColorStop(0, `rgba(${color}, ${alpha})`);
 			gradient.addColorStop(0.5, `rgba(${color}, ${alpha * 0.4})`);
