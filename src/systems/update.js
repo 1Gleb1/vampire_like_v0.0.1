@@ -1,14 +1,10 @@
 import { spawnEnemy } from '../entities/enemy.js';
-import { Particle } from '../entities/particle.js';
-import { showGameOver, showUpgradeCards } from '../ui/ui.js';
 import {
 	camera,
 	difficultyLevel,
 	enemies,
 	isPaused,
 	keys,
-	MAP_HEIGHT,
-	MAP_WIDTH,
 	maybeIncreaseDifficulty,
 	mouseX,
 	mouseY,
@@ -17,6 +13,7 @@ import {
 	projectiles,
 	triggerScreenBlink,
 } from '../shared/lib/state.js';
+import { showGameOver } from '../ui/ui.js';
 
 export function update() {
 	if (isPaused) return;
@@ -28,15 +25,11 @@ export function update() {
 		return;
 	}
 
-	player.move(keys);
-	player.shoot(projectiles, mouseX, mouseY, camera);
-	player.castChainLightning(enemies, particles);
-	player.updateRotatingBlades(enemies, particles);
+	player.update(keys, projectiles, mouseX, mouseY, camera, enemies, particles);
 	camera.update();
 
 	enemies.forEach(e => {
-		e.move(player);
-		e.shoot(player, projectiles);
+		e.update(player, projectiles);
 		if (Math.hypot(player.x - e.x, player.y - e.y) < player.size + e.size) {
 			player.hp -= e.type === 'fast' ? 1 : 2;
 			triggerScreenBlink('red', 250);
@@ -46,54 +39,9 @@ export function update() {
 	for (let i = projectiles.length - 1; i >= 0; i--) {
 		const p = projectiles[i];
 		p.update();
-		if (
-			p.x < 0 ||
-			p.x > MAP_WIDTH ||
-			p.y < 0 ||
-			p.y > MAP_HEIGHT ||
-			p.isDead()
-		) {
+		if (p.checkCollisions(enemies, player, particles)) {
 			projectiles.splice(i, 1);
 		}
-
-		for (let j = enemies.length - 1; j >= 0; j--) {
-			const e = enemies[j];
-			if (
-				p.color === 'yellow' &&
-				Math.hypot(p.x - e.x, p.y - e.y) < p.size + e.size
-			) {
-				e.hp -= 20;
-				projectiles.splice(i, 1);
-				if (e.hp <= 0) {
-					enemies.splice(j, 1);
-					player.xp += 10;
-					for (let k = 0; k < 10; k++)
-						particles.push(new Particle(e.x, e.y, e.color));
-
-					if (player.xp >= player.level * 50) {
-						player.level++;
-						player.xp = 0;
-						showUpgradeCards();
-					}
-				}
-				break;
-			}
-		}
-		if (p.isDead() || p.x < 0 || p.x > 4000 || p.y < 0 || p.y > 4000) {
-			projectiles.splice(i, 1);
-		}
-
-		if (
-			p.color === 'pink' &&
-			Math.hypot(p.x - player.x, p.y - player.y) < p.size + player.size
-		) {
-			player.hp -= 5;
-			triggerScreenBlink('red', 250);
-			projectiles.splice(i, 1);
-		}
-
-		if (p.x < 0 || p.x > 4000 || p.y < 0 || p.y > 4000)
-			projectiles.splice(i, 1);
 	}
 
 	for (let i = particles.length - 1; i >= 0; i--) {

@@ -1,5 +1,6 @@
 import { MAP_HEIGHT, MAP_WIDTH } from '../core/constants.js';
 import { showUpgradeCards } from '../ui/ui.js';
+import { ChainLightningAnimation } from './chainLightningAnimation.js';
 import { Particle } from './particle.js';
 import { Weapon } from './weapon.js';
 
@@ -20,7 +21,7 @@ export class Player {
 
 		this.hasFanShot = false;
 
-		this.hasChainLightning = false;
+		this.hasChainLightning = true;
 		this.chainLightningCooldown = 3000;
 		this.lastChainLightning = 0;
 		this.chainLightningRadius = 150;
@@ -31,7 +32,7 @@ export class Player {
 		this.chainLightningBounceRadius = 100;
 		this.chainLightningMaxLength = 5;
 
-		this.hasRotatingBlade = true;
+		this.hasRotatingBlade = false;
 		this.rotatingBlades = [];
 		this.rotatingBladeCount = 3;
 		this.rotatingBladeRadius = 120;
@@ -41,6 +42,9 @@ export class Player {
 		this.rotatingBladeAngle = 0;
 		this.rotatingBladeHitCooldownMs = 200;
 		this._rotatingBladeLastHitAt = new Map();
+
+		// Chain lightning animation
+		this.chainLightningAnimation = new ChainLightningAnimation();
 	}
 
 	move(keys) {
@@ -179,6 +183,10 @@ export class Player {
 		});
 
 		this.lastChainLightning = now;
+
+		// Reset animation when casting
+		this.chainLightningAnimation.reset();
+
 		return true;
 	}
 
@@ -231,5 +239,107 @@ export class Player {
 				}
 			}
 		}
+	}
+
+	draw(ctx, camX, camY) {
+		ctx.fillStyle = this.color;
+		ctx.beginPath();
+		ctx.arc(this.x - camX, this.y - camY, this.size, 0, Math.PI * 2);
+		ctx.fill();
+
+		if (this.hasRotatingBlade && Array.isArray(this.rotatingBlades)) {
+			ctx.fillStyle = 'gray';
+			this.rotatingBlades.forEach(b => {
+				ctx.beginPath();
+				ctx.arc(
+					b.x - camX,
+					b.y - camY,
+					this.rotatingBladeSize || 8,
+					0,
+					Math.PI * 2
+				);
+				ctx.fill();
+			});
+		}
+
+		if (this.hasChainLightning) {
+			const isOnCooldown =
+				Date.now() - this.lastChainLightning < this.chainLightningCooldown;
+			ctx.strokeStyle = isOnCooldown
+				? 'rgba(255, 0, 0, 0.3)'
+				: 'rgba(0, 255, 255, 0.3)';
+			ctx.lineWidth = 1;
+			ctx.beginPath();
+			ctx.arc(
+				this.x - camX,
+				this.y - camY,
+				this.chainLightningRadius,
+				0,
+				Math.PI * 2
+			);
+			ctx.stroke();
+
+			if (!isOnCooldown) {
+				ctx.strokeStyle = 'rgba(255, 255, 0, 0.2)';
+				ctx.lineWidth = 1;
+				ctx.beginPath();
+				ctx.arc(
+					this.x - camX,
+					this.y - camY,
+					this.chainLightningBounceRadius,
+					0,
+					Math.PI * 2
+				);
+				ctx.stroke();
+			}
+		}
+
+		if (
+			this.lastChainEffect &&
+			Date.now() - this.lastChainEffect.timestamp < 500
+		) {
+			// Update animation
+			this.chainLightningAnimation.update();
+
+			// Draw chain lightning with animation
+			this.lastChainEffect.chains.forEach(chain => {
+				// Draw chain between enemies
+				for (let i = 0; i < chain.length - 1; i++) {
+					const current = chain[i];
+					const next = chain[i + 1];
+					this.chainLightningAnimation.draw(
+						ctx,
+						current.x,
+						current.y,
+						next.x,
+						next.y,
+						camX,
+						camY
+					);
+				}
+				// Draw chain from player to first enemy
+				if (chain.length > 0) {
+					const first = chain[0];
+					this.chainLightningAnimation.draw(
+						ctx,
+						this.x,
+						this.y,
+						first.x,
+						first.y,
+						camX,
+						camY
+					);
+				}
+			});
+		}
+	}
+
+	update(keys, projectiles, mouseX, mouseY, camera, enemies, particles) {
+		this.move(keys);
+
+		this.shoot(projectiles, mouseX, mouseY, camera);
+
+		this.castChainLightning(enemies, particles);
+		this.updateRotatingBlades(enemies, particles);
 	}
 }

@@ -13,4 +13,11 @@ export class Particle {
 		this.y += this.vy;
 		this.life--;
 	}
+
+	draw(ctx, camX, camY) {
+		ctx.fillStyle = this.color;
+		ctx.beginPath();
+		ctx.arc(this.x - camX, this.y - camY, 2, 0, Math.PI * 2);
+		ctx.fill();
+	}
 }

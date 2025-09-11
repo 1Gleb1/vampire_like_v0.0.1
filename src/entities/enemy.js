@@ -46,6 +46,47 @@ export class Enemy {
 			this.lastShot = now;
 		}
 	}
+
+	draw(ctx, camX, camY) {
+		ctx.fillStyle = this.color;
+		ctx.beginPath();
+		ctx.arc(this.x - camX, this.y - camY, this.size, 0, Math.PI * 2);
+		ctx.fill();
+
+		const maxHp = this.maxHp ?? (this.type === 'fast' ? 20 : this.type === 'shooter' ? 30 : 40);
+		const hpBarWidth = 50;
+		const hpBarHeight = 6;
+		const hpBarX = this.x - camX - hpBarWidth / 2;
+		const hpBarY = this.y - camY - this.size - 10;
+
+		ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+		ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+
+		const hpPercentage = Math.max(0, Math.min(1, this.hp / maxHp));
+		const fillWidth = hpBarWidth * hpPercentage;
+		ctx.fillStyle =
+			hpPercentage > 0.5
+				? '#00ff00'
+				: hpPercentage > 0.25
+				? '#ffff00'
+				: '#ff0000';
+		ctx.fillRect(hpBarX, hpBarY, fillWidth, hpBarHeight);
+
+		ctx.strokeStyle = 'white';
+		ctx.lineWidth = 1;
+		// ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+
+		ctx.fillStyle = 'white';
+		ctx.font = '10px sans-serif';
+		ctx.textAlign = 'center';
+		ctx.textBaseline = 'middle';
+		// ctx.fillText(`${this.hp}/${maxHp}`, hpBarX + hpBarWidth / 2, hpBarY + hpBarHeight / 2 + 0.5);
+	}
+
+	update(player, projectiles) {
+		this.move(player);
+		this.shoot(player, projectiles);
+	}
 }
 
 export function spawnEnemy(type = 'normal', enemies) {
