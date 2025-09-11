@@ -43,7 +43,6 @@ export class Player {
 		this.rotatingBladeHitCooldownMs = 200;
 		this._rotatingBladeLastHitAt = new Map();
 
-		// Chain lightning animation
 		this.chainLightningAnimation = new ChainLightningAnimation();
 	}
 
@@ -184,7 +183,6 @@ export class Player {
 
 		this.lastChainLightning = now;
 
-		// Reset animation when casting
 		this.chainLightningAnimation.reset();
 
 		return true;
@@ -298,12 +296,9 @@ export class Player {
 			this.lastChainEffect &&
 			Date.now() - this.lastChainEffect.timestamp < 500
 		) {
-			// Update animation
 			this.chainLightningAnimation.update();
 
-			// Draw chain lightning with animation
 			this.lastChainEffect.chains.forEach(chain => {
-				// Draw chain between enemies
 				for (let i = 0; i < chain.length - 1; i++) {
 					const current = chain[i];
 					const next = chain[i + 1];
@@ -317,7 +312,6 @@ export class Player {
 						camY
 					);
 				}
-				// Draw chain from player to first enemy
 				if (chain.length > 0) {
 					const first = chain[0];
 					this.chainLightningAnimation.draw(

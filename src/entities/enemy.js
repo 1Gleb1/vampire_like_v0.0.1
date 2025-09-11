@@ -1,13 +1,14 @@
 import { MAP_HEIGHT, MAP_WIDTH } from '../core/constants.js';
-import { Projectile } from './projectile.js';
 import { difficultyLevel } from '../shared/lib/state.js';
+import { BatAnimation } from './Bat_Animation.js';
+import { Projectile } from './projectile.js';
 
 export class Enemy {
 	constructor(x, y, type = 'normal') {
 		this.x = x;
 		this.y = y;
 		this.type = type;
-		this.size = type === 'fast' ? 15 : type === 'shooter' ? 20 : 25;
+		this.size = type === 'fast' ? 35 : type === 'shooter' ? 20 : 25;
 		const speedBase = type === 'fast' ? 3 : type === 'shooter' ? 1.2 : 1.5;
 		const hpBase = type === 'fast' ? 20 : type === 'shooter' ? 30 : 40;
 		const speedScale = 1 + (difficultyLevel - 1) * 0.05;
@@ -21,6 +22,8 @@ export class Enemy {
 		const fireScale = Math.max(600, fireBase - (difficultyLevel - 1) * 75);
 		this.fireRate = type === 'shooter' ? fireScale : 0;
 		this.lastShot = 0;
+
+		this.batAnimation = new BatAnimation();
 	}
 
 	move(player) {
@@ -48,12 +51,19 @@ export class Enemy {
 	}
 
 	draw(ctx, camX, camY) {
-		ctx.fillStyle = this.color;
-		ctx.beginPath();
-		ctx.arc(this.x - camX, this.y - camY, this.size, 0, Math.PI * 2);
-		ctx.fill();
+		if (this.type === 'fast') {
+			this.batAnimation.update();
+			this.batAnimation.draw(ctx, this.x, this.y, this.size, camX, camY);
+		} else {
+			ctx.fillStyle = this.color;
+			ctx.beginPath();
+			ctx.arc(this.x - camX, this.y - camY, this.size, 0, Math.PI * 2);
+			ctx.fill();
+		}
 
-		const maxHp = this.maxHp ?? (this.type === 'fast' ? 20 : this.type === 'shooter' ? 30 : 40);
+		const maxHp =
+			this.maxHp ??
+			(this.type === 'fast' ? 20 : this.type === 'shooter' ? 30 : 40);
 		const hpBarWidth = 50;
 		const hpBarHeight = 6;
 		const hpBarX = this.x - camX - hpBarWidth / 2;
