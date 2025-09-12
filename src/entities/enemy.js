@@ -1,6 +1,6 @@
 import { MAP_HEIGHT, MAP_WIDTH } from '../core/constants.js';
 import { difficultyLevel } from '../shared/lib/state.js';
-import { BatAnimation } from './Bat_Animation.js';
+import { BatAnimation } from './batAnimation.js';
 import { Projectile } from './projectile.js';
 
 export class Enemy {
