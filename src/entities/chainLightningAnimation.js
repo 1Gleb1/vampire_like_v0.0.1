@@ -14,7 +14,7 @@ export class ChainLightningAnimation {
 			const imagePromises = [];
 			for (let i = 1; i <= this.frameCount; i++) {
 				const img = new Image();
-				img.src = `./assets/chain_lightning/frames/lightning_skill1_frame${i}.png`;
+				img.src = `./assets/chain_lightning/frames/lightning_skill_frame${i}.png`;
 				imagePromises.push(
 					new Promise((resolve, reject) => {
 						img.onload = () => resolve(img);
