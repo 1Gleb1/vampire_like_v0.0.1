@@ -14,7 +14,7 @@ export class BatAnimation {
 			const imagePromises = [];
 			for (let i = 1; i <= this.frameCount; i++) {
 				const img = new Image();
-				img.src = `assets/bat_black_red/frames/Bat${i}.png`;
+				img.src = `./assets/bat_black_red/frames/Bat${i}.png`;
 				imagePromises.push(
 					new Promise((resolve, reject) => {
 						img.onload = () => resolve(img);
