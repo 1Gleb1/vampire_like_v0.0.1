@@ -1,6 +1,6 @@
-import { ChainLightningAnimation } from "../../chainLightningAnimation.ts";
 import type { Enemy } from "../../enemy/enemy.ts";
 import { Particle } from "../../particle.ts";
+import { ChainLightningAnimation } from "./chainLightningAnimation.ts";
 
 export interface ChainEffect {
   chains: { x: number; y: number }[][];

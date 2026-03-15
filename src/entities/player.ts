@@ -1,8 +1,8 @@
 import { MAP_HEIGHT, MAP_WIDTH } from "../core/constants.js";
 import { showUpgradeCards } from "../ui/ui.ts";
-import { ChainLightningAnimation } from "./chainLightningAnimation.ts";
 import type { Enemy } from "./enemy/enemy.ts";
 import { Particle } from "./particle.ts";
+import { ChainLightningAnimation } from "./weapons/lightning/chainLightningAnimation.ts";
 import {
   castChainLightning,
   type ChainEffect,
