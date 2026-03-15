@@ -58,7 +58,7 @@ export class NormalAnimation {
     size: number,
     camX: number,
     camY: number,
-    facingAngle: number,
+    isFlipped: boolean,
   ): void {
     if (!this.isLoaded || this.frames.length === 0) {
       // Отрисовка заглушки, если изображения не загружены
@@ -80,7 +80,9 @@ export class NormalAnimation {
 
     ctx.save();
     ctx.translate(x - camX, y - camY);
-    ctx.rotate(facingAngle);
+    if (isFlipped) {
+      ctx.scale(-1, 1);
+    }
     ctx.drawImage(currentImage, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
     ctx.restore();
   }

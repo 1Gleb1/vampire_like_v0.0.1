@@ -19,7 +19,7 @@ export class Enemy {
   private lastShot: number;
   private normalAnimation: NormalAnimation;
   private batAnimation: BatAnimation;
-  private facingAngle: number;
+  private isFlipped: boolean;
 
   constructor(x: number, y: number, type: EnemyType = "normal") {
     this.x = x;
@@ -90,7 +90,7 @@ export class Enemy {
 
     this.batAnimation = new BatAnimation();
     this.normalAnimation = new NormalAnimation();
-    this.facingAngle = 0;
+    this.isFlipped = false;
   }
 
   public move(player: { x: number; y: number }): void {
@@ -98,7 +98,7 @@ export class Enemy {
     const dy = player.y - this.y;
     const dist = Math.hypot(dx, dy);
 
-    this.facingAngle = Math.atan2(dy, dx);
+    this.isFlipped = player.x > this.x;
 
     if (dist > 0) {
       this.x += (dx / dist) * this.speed;
@@ -133,7 +133,7 @@ export class Enemy {
         this.size,
         camX,
         camY,
-        this.facingAngle,
+        this.isFlipped,
       );
     } else if (this.type === "normal") {
       this.normalAnimation.update();
@@ -144,7 +144,7 @@ export class Enemy {
         this.size,
         camX,
         camY,
-        this.facingAngle,
+        this.isFlipped,
       );
     } else {
       ctx.fillStyle = this.color;
@@ -152,15 +152,6 @@ export class Enemy {
       ctx.arc(this.x - camX, this.y - camY, this.size, 0, Math.PI * 2);
       ctx.fill();
 
-      const eyeDistance = this.size * 0.55;
-      const eyeRadius = Math.max(3, this.size * 0.2);
-      const eyeX = this.x - camX + Math.cos(this.facingAngle) * eyeDistance;
-      const eyeY = this.y - camY + Math.sin(this.facingAngle) * eyeDistance;
-
-      ctx.fillStyle = "white";
-      ctx.beginPath();
-      ctx.arc(eyeX, eyeY, eyeRadius, 0, Math.PI * 2);
-      ctx.fill();
     }
 
     // Получаем максимальное здоровье для отображения полоски
