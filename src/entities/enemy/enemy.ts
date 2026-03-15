@@ -35,7 +35,7 @@ export class Enemy {
         this.size = 20;
         break;
       default: // 'normal'
-        this.size = 25;
+        this.size = 50;
     }
 
     // Базовая скорость
@@ -98,7 +98,7 @@ export class Enemy {
     const dy = player.y - this.y;
     const dist = Math.hypot(dx, dy);
 
-    this.isFlipped = player.x > this.x;
+    this.isFlipped = player.x < this.x;
 
     if (dist > 0) {
       this.x += (dx / dist) * this.speed;
@@ -126,32 +126,15 @@ export class Enemy {
   public draw(ctx: CanvasRenderingContext2D, camX: number, camY: number): void {
     if (this.type === "fast") {
       this.batAnimation.update();
-      this.batAnimation.draw(
-        ctx,
-        this.x,
-        this.y,
-        this.size,
-        camX,
-        camY,
-        this.isFlipped,
-      );
+      this.batAnimation.draw(ctx, this.x, this.y, this.size, camX, camY, this.isFlipped);
     } else if (this.type === "normal") {
       this.normalAnimation.update();
-      this.normalAnimation.draw(
-        ctx,
-        this.x,
-        this.y,
-        this.size,
-        camX,
-        camY,
-        this.isFlipped,
-      );
+      this.normalAnimation.draw(ctx, this.x, this.y, this.size, camX, camY, this.isFlipped);
     } else {
       ctx.fillStyle = this.color;
       ctx.beginPath();
       ctx.arc(this.x - camX, this.y - camY, this.size, 0, Math.PI * 2);
       ctx.fill();
-
     }
 
     // Получаем максимальное здоровье для отображения полоски
