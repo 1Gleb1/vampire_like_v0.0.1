@@ -160,7 +160,15 @@ export class Player {
     ctx.fill();
 
     if (this.hasRotatingBlade && Array.isArray(this.rotatingBlades)) {
-      drawRotatingBlades(ctx, this.rotatingBlades, this.rotatingBladeSize || 8, camX, camY);
+      drawRotatingBlades(
+        ctx,
+        this.rotatingBlades,
+        this.rotatingBladeSize || 8,
+        this.x,
+        this.y,
+        camX,
+        camY,
+      );
     }
 
     if (this.hasChainLightning) {

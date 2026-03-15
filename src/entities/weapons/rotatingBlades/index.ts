@@ -99,6 +99,8 @@ export function drawRotatingBlades(
   ctx: CanvasRenderingContext2D,
   rotatingBlades: RotatingBlade[],
   bladeSize: number,
+  playerX: number,
+  playerY: number,
   camX: number,
   camY: number,
 ): void {
@@ -109,7 +111,13 @@ export function drawRotatingBlades(
     const y = blade.y - camY;
 
     if (isRotatingBladeImageLoaded) {
-      ctx.drawImage(rotatingBladeImage, x - drawSize / 2, y - drawSize / 2, drawSize, drawSize);
+      const angleAwayFromPlayer = Math.atan2(blade.y - playerY, blade.x - playerX);
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angleAwayFromPlayer);
+      ctx.drawImage(rotatingBladeImage, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+      ctx.restore();
       return;
     }
 
