@@ -5,15 +5,12 @@ import { Particle } from './particle.ts';
 import { Weapon } from './weapons/weapon.ts';
 import { Enemy } from './enemy.ts';
 import {
-	castChainLightning,
+	castChainLightning, type ChainEffect,
 	drawChainLightningEffects,
-	ChainEffect,
 } from './weapons/lightning/index.ts';
 import {
-	RotatingBlade,
-	RotatingBladesState,
 	updateRotatingBlades,
-	drawRotatingBlades,
+	drawRotatingBlades, type RotatingBlade, type RotatingBladesState,
 } from './weapons/rotatingBlades/index.ts';
 
 export interface KeysPressed {
