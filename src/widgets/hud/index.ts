@@ -4,6 +4,6 @@ export {
   bindUpgradeClick,
   drawUpgradeCards,
   updateHud,
-} from '../../ui/ui.js';
+} from '../../ui/ui.ts';
 
 

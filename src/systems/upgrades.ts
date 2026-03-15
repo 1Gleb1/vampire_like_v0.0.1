@@ -1,49 +1,67 @@
-const spellCategories = {
+import {Player} from "../entities";
+
+
+export interface UpgradeEffect {
+	name: string;
+	effect: (player: Player) => void;
+}
+
+interface SpellCategory {
+	flag: keyof Player; // Ключ игрока, который указывает на наличие заклинания
+	base: UpgradeEffect;
+	modifications: UpgradeEffect[];
+}
+
+interface SpellCategories {
+	[key: string]: SpellCategory;
+}
+
+const spellCategories: SpellCategories = {
 	chainLightning: {
 		flag: 'hasChainLightning',
 		base: {
 			name: 'Цепная молния',
-			effect: player => {
+			effect: (player: Player) => {
 				player.hasChainLightning = true;
 			},
 		},
 		modifications: [
 			{
 				name: '+1 цель молнии',
-				effect: player => {
+				effect: (player: Player) => {
 					player.chainLightningTargets += 1;
 				},
 			},
 			{
 				name: 'Усиленная молния',
-				effect: player => {
+				effect: (player: Player) => {
 					player.chainLightningDamage += 15;
 				},
 			},
 			{
 				name: 'Радиус срабатывания молнии',
-				effect: player => {
+				effect: (player: Player) => {
 					player.chainLightningRadius += 50;
 				},
 			},
 			{
 				name: 'Радиус отскока молнии',
-				effect: player => {
+				effect: (player: Player) => {
 					player.chainLightningBounceRadius += 50;
 				},
 			},
 			{
 				name: 'Перезарядка молнии',
-				effect: player => {
+				effect: (player: Player) => {
 					player.chainLightningCooldown = Math.max(
-						1000,
-						player.chainLightningCooldown - 500
+							1000,
+							player.chainLightningCooldown - 500
 					);
 				},
 			},
 			{
 				name: 'Длинная цепь',
-				effect: player => {
+				effect: (player: Player) => {
 					player.chainLightningMaxLength += 3;
 				},
 			},
@@ -53,33 +71,39 @@ const spellCategories = {
 		flag: 'hasFanShot',
 		base: {
 			name: 'Стрельба веером',
-			effect: player => {
+			effect: (player: Player) => {
 				player.hasFanShot = true;
-				if (player.weapons && player.weapons[0]) player.weapons[0].setFanShot();
+				if (player.weapons && player.weapons[0]) {
+					player.weapons[0].setFanShot();
+				}
 			},
 		},
 		modifications: [
 			{
 				name: '+1 пуля веера',
-				effect: player => {
+				effect: (player: Player) => {
 					const w = player.weapons && player.weapons[0];
-					if (w && typeof w.increaseFanCount === 'function')
+					if (w && typeof w.increaseFanCount === 'function') {
 						w.increaseFanCount(1);
+					}
 				},
 			},
 			{
 				name: 'Шире веер',
-				effect: player => {
+				effect: (player: Player) => {
 					const w = player.weapons && player.weapons[0];
-					if (w && typeof w.increaseFanSpread === 'function')
+					if (w && typeof w.increaseFanSpread === 'function') {
 						w.increaseFanSpread(Math.PI / 18);
+					}
 				},
 			},
 			{
 				name: 'Быстрые пули (веер)',
-				effect: player => {
+				effect: (player: Player) => {
 					const w = player.weapons && player.weapons[0];
-					if (w) w.speed += 1;
+					if (w) {
+						w.speed += 1;
+					}
 				},
 			},
 		],
@@ -88,7 +112,7 @@ const spellCategories = {
 		flag: 'hasRotatingBlade',
 		base: {
 			name: 'Вращающееся лезвие',
-			effect: player => {
+			effect: (player: Player) => {
 				player.hasRotatingBlade = true;
 			},
 		},
@@ -96,30 +120,40 @@ const spellCategories = {
 	},
 };
 
-const basicUpgrades = [
+const basicUpgrades: UpgradeEffect[] = [
 	{
 		name: 'Автоматическая стрельба',
-		effect: player => (player.fireRate = Math.max(50, player.fireRate - 100)),
+		effect: (player: Player) => {
+			player.fireRate = Math.max(50, player.fireRate - 100);
+		},
 	},
 	{
 		name: 'Увеличение HP',
-		effect: player => {
+		effect: (player: Player) => {
 			player.maxHp += 20;
 			player.hp += 20;
 		},
 	},
-	{ name: 'Скорость движения', effect: player => (player.speed += 0.5) },
+	{
+		name: 'Скорость движения',
+		effect: (player: Player) => {
+			player.speed += 0.5;
+		}
+	},
 	// {
 	// 	name: 'Скорость пули',
-	// 	effect: player => player.weapons.forEach(w => (w.speed += 1)),
+	// 	effect: (player: Player) => {
+	// 		player.weapons.forEach(w => (w.speed += 1));
+	// 	},
 	// },
 ];
 
-export function getAvailableUpgrades(player) {
-	const availableUpgrades = [...basicUpgrades];
+export function getAvailableUpgrades(player: Player): UpgradeEffect[] {
+	const availableUpgrades: UpgradeEffect[] = [...basicUpgrades];
 
-	Object.values(spellCategories).forEach(spellCategory => {
+	Object.values(spellCategories).forEach((spellCategory: SpellCategory) => {
 		const flag = spellCategory.flag;
+
 		if (spellCategory.base && flag && !player[flag]) {
 			availableUpgrades.push(spellCategory.base);
 		} else if (spellCategory.modifications && flag && player[flag]) {
@@ -130,4 +164,4 @@ export function getAvailableUpgrades(player) {
 	return availableUpgrades;
 }
 
-export const allUpgrades = basicUpgrades;
+export const allUpgrades: UpgradeEffect[] = basicUpgrades;

@@ -1,4 +1,4 @@
-import { spawnEnemy } from '../entities/enemy.js';
+import { spawnEnemy } from '../entities';
 import {
 	camera,
 	difficultyLevel,
@@ -12,8 +12,8 @@ import {
 	player,
 	projectiles,
 	triggerScreenBlink,
-} from '../shared/lib/state.js';
-import { showGameOver } from '../ui/ui.js';
+} from '../shared/lib/state.ts';
+import { showGameOver } from '../ui/ui.ts';
 
 export function update() {
 	if (isPaused) return;

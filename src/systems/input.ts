@@ -4,7 +4,7 @@ import {
 	keys,
 	setMouse,
 	setPaused,
-} from '../shared/lib/state.js';
+} from '../shared/lib/state.ts';
 
 export function initInput() {
 	canvas.addEventListener('mousemove', e => {
