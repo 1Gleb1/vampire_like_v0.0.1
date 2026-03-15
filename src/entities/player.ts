@@ -97,7 +97,7 @@ export class Player {
     this.rotatingBladeRadius = 60;
     this.rotatingBladeSpeed = 0.05;
     this.rotatingBlades = [];
-    this.rotatingBladeSize = 8;
+    this.rotatingBladeSize = 18;
     this.rotatingBladeDamage = 10;
     this.rotatingBladeAngle = 0;
     this.rotatingBladeHitCooldownMs = 200;
