@@ -1,5 +1,14 @@
+import rotatingBladeSprite from "../../../shared/assets/rotatingBlades/blade.png";
 import type { Enemy } from "../../enemy/enemy.ts";
 import { Particle } from "../../particle.ts";
+
+const rotatingBladeImage = new Image();
+let isRotatingBladeImageLoaded = false;
+
+rotatingBladeImage.src = rotatingBladeSprite;
+rotatingBladeImage.onload = () => {
+  isRotatingBladeImageLoaded = true;
+};
 
 export interface RotatingBlade {
   angle: number;
@@ -93,10 +102,20 @@ export function drawRotatingBlades(
   camX: number,
   camY: number,
 ): void {
-  ctx.fillStyle = "gray";
+  const drawSize = bladeSize * 3;
+
   rotatingBlades.forEach((blade) => {
+    const x = blade.x - camX;
+    const y = blade.y - camY;
+
+    if (isRotatingBladeImageLoaded) {
+      ctx.drawImage(rotatingBladeImage, x - drawSize / 2, y - drawSize / 2, drawSize, drawSize);
+      return;
+    }
+
+    ctx.fillStyle = "gray";
     ctx.beginPath();
-    ctx.arc(blade.x - camX, blade.y - camY, bladeSize, 0, Math.PI * 2);
+    ctx.arc(x, y, bladeSize, 0, Math.PI * 2);
     ctx.fill();
   });
 }

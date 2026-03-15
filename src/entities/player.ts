@@ -53,8 +53,15 @@ export class Player {
   public chainLightningMaxLength: number;
 
   public hasRotatingBlade: boolean;
+  public rotatingBladeCount: number;
+  public rotatingBladeRadius: number;
+  public rotatingBladeSpeed: number;
   private rotatingBlades: RotatingBlade[];
   private rotatingBladeSize: number;
+  public rotatingBladeDamage: number;
+  public rotatingBladeAngle: number;
+  public rotatingBladeHitCooldownMs: number;
+  public rotatingBladeLastHitAt: Map<Enemy, number>;
 
   private chainLightningAnimation: ChainLightningAnimation;
 
@@ -85,9 +92,16 @@ export class Player {
     this.chainLightningBounceRadius = 100;
     this.chainLightningMaxLength = 5;
 
-    this.hasRotatingBlade = false;
+    this.hasRotatingBlade = true;
+    this.rotatingBladeCount = 3;
+    this.rotatingBladeRadius = 60;
+    this.rotatingBladeSpeed = 0.05;
     this.rotatingBlades = [];
     this.rotatingBladeSize = 8;
+    this.rotatingBladeDamage = 10;
+    this.rotatingBladeAngle = 0;
+    this.rotatingBladeHitCooldownMs = 200;
+    this.rotatingBladeLastHitAt = new Map();
 
     this.chainLightningAnimation = new ChainLightningAnimation();
   }
