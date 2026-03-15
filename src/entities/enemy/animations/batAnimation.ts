@@ -58,6 +58,7 @@ export class BatAnimation {
     size: number,
     camX: number,
     camY: number,
+    facingAngle: number,
   ): void {
     if (!this.isLoaded || this.frames.length === 0) {
       // Отрисовка заглушки, если изображения не загружены
@@ -76,10 +77,12 @@ export class BatAnimation {
     const drawWidth = size * 2;
     const drawHeight = (size * 2) / imageAspectRatio;
 
-    const drawX = x - camX - drawWidth / 2;
-    const drawY = y - camY - drawHeight / 2;
 
-    ctx.drawImage(currentImage, drawX, drawY, drawWidth, drawHeight);
+    ctx.save();
+    ctx.translate(x - camX, y - camY);
+    ctx.rotate(facingAngle);
+    ctx.drawImage(currentImage, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+    ctx.restore();
   }
 
   public reset(): void {
