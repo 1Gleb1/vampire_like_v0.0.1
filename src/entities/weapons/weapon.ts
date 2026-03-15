@@ -1,4 +1,5 @@
-import { Projectile } from './projectile.ts';
+import { Projectile } from '../projectile.ts';
+import { fireShotgunPattern } from './fan/index.ts';
 
 type WeaponType = 'aim' | 'multi' | 'fan' | 'splash' | 'beam' | 'four';
 
@@ -47,16 +48,13 @@ export class Weapon {
 					)
 			);
 		} else if (this.type === 'fan') {
-			const centerAngle = Math.atan2(targetY - y, targetX - x);
-			const spread = this.fanSpread;
-			const count = this.fanCount;
-
-			for (let i = 0; i < count; i++) {
-				const angle = centerAngle - spread / 2 + (spread / (count - 1)) * i;
-				projectiles.push(
-						new Projectile(x, y, angle, this.speed, this.size, this.color)
-				);
-			}
+			fireShotgunPattern(x, y, targetX, targetY, projectiles, {
+				spread: this.fanSpread,
+				count: this.fanCount,
+				speed: this.speed,
+				size: this.size,
+				color: this.color,
+			});
 		} else if (this.type === 'splash') {
 			for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) {
 				projectiles.push(

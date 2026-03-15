@@ -1,0 +1,1 @@
+// splash weapon module placeholder.

@@ -1,0 +1,1 @@
+// beam weapon module placeholder.

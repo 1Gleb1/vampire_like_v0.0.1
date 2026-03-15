@@ -2,19 +2,19 @@ import { MAP_HEIGHT, MAP_WIDTH } from '../core/constants.js';
 import { showUpgradeCards } from '../ui/ui.ts';
 import { ChainLightningAnimation } from './chainLightningAnimation.ts';
 import { Particle } from './particle.ts';
-import { Weapon } from './weapon.ts';
+import { Weapon } from './weapons/weapon.ts';
 import { Enemy } from './enemy.ts';
-
-interface RotatingBlade {
-	angle: number;
-	x: number;
-	y: number;
-}
-
-interface ChainEffect {
-	chains: { x: number; y: number }[][];
-	timestamp: number;
-}
+import {
+	castChainLightning,
+	drawChainLightningEffects,
+	ChainEffect,
+} from './weapons/lightning/index.ts';
+import {
+	RotatingBlade,
+	RotatingBladesState,
+	updateRotatingBlades,
+	drawRotatingBlades,
+} from './weapons/rotatingBlades/index.ts';
 
 export interface KeysPressed {
 	[key: string]: boolean;
@@ -61,7 +61,7 @@ export class Player {
 	private rotatingBladeDamage: number;
 	private rotatingBladeAngle: number;
 	private rotatingBladeHitCooldownMs: number;
-	private _rotatingBladeLastHitAt: Map<Enemy, number>;
+	private rotatingBladeLastHitAt: Map<Enemy, number>;
 
 	private chainLightningAnimation: ChainLightningAnimation;
 
@@ -101,7 +101,7 @@ export class Player {
 		this.rotatingBladeDamage = 12;
 		this.rotatingBladeAngle = 0;
 		this.rotatingBladeHitCooldownMs = 200;
-		this._rotatingBladeLastHitAt = new Map<Enemy, number>();
+		this.rotatingBladeLastHitAt = new Map<Enemy, number>();
 
 		this.chainLightningAnimation = new ChainLightningAnimation();
 	}
@@ -136,167 +136,27 @@ export class Player {
 	}
 
 	public castChainLightning(enemies: Enemy[], particles: Particle[]): boolean {
-		if (!this.hasChainLightning) return false;
-
-		const now = Date.now();
-		if (now - this.lastChainLightning < this.chainLightningCooldown)
-			return false;
-
-		const initialEnemies: Enemy[] = [];
-		const hitEnemies = new Set<Enemy>();
-
-		for (
-				let targetIndex = 0;
-				targetIndex < this.chainLightningTargets;
-				targetIndex++
-		) {
-			let nearestEnemy: Enemy | null = null;
-			let nearestDistance = Infinity;
-
-			enemies.forEach(enemy => {
-				if (hitEnemies.has(enemy)) return;
-
-				const distance = Math.hypot(this.x - enemy.x, this.y - enemy.y);
-				if (
-						distance <= this.chainLightningRadius &&
-						distance < nearestDistance
-				) {
-					nearestEnemy = enemy;
-					nearestDistance = distance;
-				}
-			});
-
-			if (nearestEnemy) {
-				initialEnemies.push(nearestEnemy);
-				hitEnemies.add(nearestEnemy);
-			} else {
-				break;
-			}
-		}
-
-		if (initialEnemies.length === 0) return false;
-
-		this.lastChainEffect = {
-			chains: [],
-			timestamp: now,
-		};
-
-		initialEnemies.forEach((initialEnemy) => {
-			const chainEnemies: { x: number; y: number }[] = [];
-			let currentEnemy: Enemy | null = initialEnemy;
-			let chainCount = 0;
-
-			while (currentEnemy && chainCount < this.chainLightningMaxLength) {
-				chainEnemies.push({
-					x: currentEnemy.x,
-					y: currentEnemy.y,
-				});
-
-				currentEnemy.hp -= this.chainLightningDamage;
-
-				const particleCount = this.chainLightningTargets > 1 ? 20 : 15;
-				for (let i = 0; i < particleCount; i++) {
-					particles.push(
-							new Particle(currentEnemy.x, currentEnemy.y, '#00ffff')
-					);
-				}
-
-				if (currentEnemy.hp <= 0) {
-					const enemyIndex = enemies.indexOf(currentEnemy);
-					if (enemyIndex > -1) {
-						enemies.splice(enemyIndex, 1);
-						this.xp += 10;
-						for (let k = 0; k < 10; k++) {
-							particles.push(
-									new Particle(currentEnemy.x, currentEnemy.y, currentEnemy.color)
-							);
-						}
-					}
-				}
-
-				let nextEnemy: Enemy | null = null;
-				let nextDistance = Infinity;
-
-				enemies.forEach(enemy => {
-					if (hitEnemies.has(enemy)) return;
-
-					const distance = Math.hypot(
-							currentEnemy!.x - enemy.x,
-							currentEnemy!.y - enemy.y
-					);
-					if (
-							distance <= this.chainLightningBounceRadius &&
-							distance < nextDistance
-					) {
-						nextEnemy = enemy;
-						nextDistance = distance;
-					}
-				});
-
-				currentEnemy = nextEnemy;
-				if (currentEnemy) hitEnemies.add(currentEnemy);
-				chainCount++;
-			}
-
-			this.lastChainEffect!.chains.push(chainEnemies);
+		const effect = castChainLightning({
+			casterX: this.x,
+			casterY: this.y,
+			state: this,
+			enemies,
+			particles,
 		});
 
-		this.lastChainLightning = now;
-
+		if (!effect) return false;
+		this.lastChainEffect = effect;
 		this.chainLightningAnimation.reset();
-
 		return true;
 	}
 
 	public updateRotatingBlades(enemies: Enemy[], particles: Particle[]): void {
-		if (!this.hasRotatingBlade) return;
-
-		if (!Array.isArray(this.rotatingBlades)) this.rotatingBlades = [];
-		if (this.rotatingBlades.length !== this.rotatingBladeCount) {
-			this.rotatingBlades = [];
-			for (let i = 0; i < this.rotatingBladeCount; i++) {
-				this.rotatingBlades.push({
-					angle: (i / this.rotatingBladeCount) * Math.PI * 2,
-					x: this.x,
-					y: this.y,
-				});
-			}
-		}
-
-		this.rotatingBladeAngle += this.rotatingBladeSpeed;
-
-		const now = Date.now();
-		for (let i = 0; i < this.rotatingBlades.length; i++) {
-			const blade = this.rotatingBlades[i];
-			const ang = blade.angle + this.rotatingBladeAngle;
-			blade.x = this.x + Math.cos(ang) * this.rotatingBladeRadius;
-			blade.y = this.y + Math.sin(ang) * this.rotatingBladeRadius;
-
-			for (let j = enemies.length - 1; j >= 0; j--) {
-				const e = enemies[j];
-				const dist = Math.hypot(blade.x - e.x, blade.y - e.y);
-				if (dist < this.rotatingBladeSize + e.size) {
-					const lastHit = this._rotatingBladeLastHitAt.get(e) || 0;
-					if (now - lastHit < this.rotatingBladeHitCooldownMs) continue;
-					this._rotatingBladeLastHitAt.set(e, now);
-
-					e.hp -= this.rotatingBladeDamage;
-					for (let k = 0; k < 6; k++)
-						particles.push(new Particle(e.x, e.y, e.color));
-					if (e.hp <= 0) {
-						enemies.splice(j, 1);
-						this.xp += 10;
-						for (let k = 0; k < 10; k++)
-							particles.push(new Particle(e.x, e.y, e.color));
-						if (this.xp >= this.level * 50) {
-							this.level++;
-							this.xp = 0;
-							showUpgradeCards();
-						}
-					}
-				}
-			}
-		}
+		updateRotatingBlades({
+			state: this as unknown as RotatingBladesState,
+			enemies,
+			particles,
+			onLevelUp: () => showUpgradeCards(),
+		});
 	}
 
 	public draw(ctx: CanvasRenderingContext2D, camX: number, camY: number): void {
@@ -306,18 +166,7 @@ export class Player {
 		ctx.fill();
 
 		if (this.hasRotatingBlade && Array.isArray(this.rotatingBlades)) {
-			ctx.fillStyle = 'gray';
-			this.rotatingBlades.forEach(b => {
-				ctx.beginPath();
-				ctx.arc(
-						b.x - camX,
-						b.y - camY,
-						this.rotatingBladeSize || 8,
-						0,
-						Math.PI * 2
-				);
-				ctx.fill();
-			});
+			drawRotatingBlades(ctx, this.rotatingBlades, this.rotatingBladeSize || 8, camX, camY);
 		}
 
 		if (this.hasChainLightning) {
@@ -352,40 +201,15 @@ export class Player {
 			}
 		}
 
-		if (
-				this.lastChainEffect &&
-				Date.now() - this.lastChainEffect.timestamp < 500
-		) {
-			this.chainLightningAnimation.update();
-
-			this.lastChainEffect.chains.forEach(chain => {
-				for (let i = 0; i < chain.length - 1; i++) {
-					const current = chain[i];
-					const next = chain[i + 1];
-					this.chainLightningAnimation.draw(
-							ctx,
-							current.x,
-							current.y,
-							next.x,
-							next.y,
-							camX,
-							camY
-					);
-				}
-				if (chain.length > 0) {
-					const first = chain[0];
-					this.chainLightningAnimation.draw(
-							ctx,
-							this.x,
-							this.y,
-							first.x,
-							first.y,
-							camX,
-							camY
-					);
-				}
-			});
-		}
+		drawChainLightningEffects(
+			ctx,
+			this.chainLightningAnimation,
+			this.lastChainEffect,
+			this.x,
+			this.y,
+			camX,
+			camY,
+		);
 	}
 
 	public update(

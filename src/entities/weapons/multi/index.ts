@@ -1,0 +1,1 @@
+// multi weapon module placeholder.
