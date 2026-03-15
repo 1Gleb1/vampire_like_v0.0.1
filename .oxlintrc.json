@@ -1,0 +1,13 @@
+{
+  "$schema": "https://oxc.rs/oxlint/configuration/schema.json",
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "ignorePatterns": ["dist", "node_modules", "tsconfig.tsbuildinfo"],
+  "rules": {
+    "eqeqeq": "error",
+    "no-debugger": "error",
+    "no-console": "warn"
+  }
+}
